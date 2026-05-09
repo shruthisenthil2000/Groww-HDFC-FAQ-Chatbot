@@ -12,7 +12,7 @@ RETRIEVER_TOP_K,
 
 from ingestion.phase2.indexer import search_faiss
 
-logger = logging.getLogger(**name**)
+logger = logging.getLogger(name)
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -42,9 +42,9 @@ model=EMBEDDING_MODEL,
 input=text,
 )
 
-```
+
 return response.data[0].embedding
-```
+
 
 def retrieve(
 query: str,
@@ -53,7 +53,7 @@ fund_id: str | None = None,
 filter_section_type: str | None = None,
 ) -> list[dict]:
 
-```
+
 logger.info(
     "Retrieving top_k=%d fund_id=%s section_filter=%s query=%r",
     top_k,
@@ -140,11 +140,11 @@ if fund_id is not None:
 logger.info("%d chunks retrieved", len(results))
 
 return results[:top_k]
-```
 
-if **name** == "**main**":
 
-```
+if name == "main":
+
+
 import sys
 
 from retrieval.router import route
