@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FundInsight | SBI Bluechip Fund Analysis</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;family=Hanken+Grotesk:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-on-surface": "#f0f1f2",
+                        "secondary": "#586062",
+                        "on-primary-container": "#004c1b",
+                        "surface-variant": "#e1e3e4",
+                        "surface": "#f8f9fa",
+                        "outline-variant": "#bbcbb8",
+                        "on-tertiary-fixed": "#181c22",
+                        "primary-fixed-dim": "#3ce36a",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#edeeef",
+                        "background": "#0a0c10",
+                        "inverse-primary": "#3ce36a",
+                        "on-tertiary-container": "#3d4148",
+                        "on-secondary-container": "#5d6466",
+                        "tertiary": "#5b5e66",
+                        "error": "#ba1a1a",
+                        "primary": "#00c853",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d9dadb",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#1a1c20",
+                        "secondary-container": "#dae1e3",
+                        "inverse-surface": "#f8f9fa",
+                        "surface-bright": "#1e2126",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#c3c6cf",
+                        "surface-container-lowest": "#0d1117",
+                        "tertiary-fixed": "#dfe2eb",
+                        "tertiary-container": "#aaadb6",
+                        "secondary-fixed": "#dde4e6",
+                        "on-surface-variant": "#aeb5ae",
+                        "primary-fixed": "#69ff87",
+                        "on-primary-fixed-variant": "#00531e",
+                        "on-secondary-fixed-variant": "#41484a",
+                        "surface-tint": "#00c853",
+                        "outline": "#444c44",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#f8f9fa",
+                        "on-primary-fixed": "#002108",
+                        "secondary-fixed-dim": "#c1c8ca",
+                        "surface-container-highest": "#21262d",
+                        "surface-container-low": "#161b22",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#161d1f",
+                        "primary-container": "#00c853",
+                        "on-surface": "#f0f0f2",
+                        "on-tertiary-fixed-variant": "#43474e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "sm": "8px",
+                        "max-width": "1200px",
+                        "xl": "32px",
+                        "base": "4px",
+                        "gutter": "16px",
+                        "margin-desktop": "32px",
+                        "xxl": "48px",
+                        "margin-mobile": "16px",
+                        "lg": "24px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["inter"],
+                        "headline-md": ["manrope"],
+                        "headline-lg-mobile": ["manrope"],
+                        "headline-lg": ["manrope"],
+                        "data-tabular": ["inter"],
+                        "label-md": ["hankenGrotesk"],
+                        "display": ["manrope"],
+                        "body-sm": ["inter"],
+                        "label-sm": ["hankenGrotesk"],
+                        "body-md": ["inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "data-tabular": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "display": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "14px", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .dark .data-grid-bg {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .glass-card {
+            background: rgba(13, 17, 23, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .sparkline-glow {
+            filter: drop-shadow(0 0 4px rgba(0, 200, 83, 0.6));
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden data-grid-bg min-h-screen">
+<!-- TopAppBar -->
+<header class="bg-background/80 backdrop-blur-xl border-b border-white/5 shadow-[0_0_40px_rgba(0,0,0,0.5)] docked full-width top-0 z-50 h-20">
+<div class="flex justify-between items-center px-gutter w-full max-w-max-width mx-auto h-full">
+<div class="flex items-center gap-md">
+<span class="font-headline-md text-headline-md font-extrabold text-primary tracking-tight">FundInsight</span>
+<nav class="hidden md:flex gap-lg ml-xl">
+<a class="text-primary font-bold font-label-md text-label-md" href="#">Intelligence</a>
+<a class="text-on-surface-variant hover:bg-white/5 transition-all duration-200 px-sm py-xs rounded font-label-md text-label-md" href="#">History</a>
+<a class="text-on-surface-variant hover:bg-white/5 transition-all duration-200 px-sm py-xs rounded font-label-md text-label-md" href="#">Database</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-80 pl-10 pr-4 py-2 bg-surface-container-low border border-white/10 rounded-full text-body-sm font-body-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all text-on-surface" type="text" value="What is the current NAV and exit load for SBI Bluechip Fund?"/>
+</div>
+<div class="flex gap-sm">
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-white/10 p-sm rounded-full transition-all">account_circle</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-white/10 p-sm rounded-full transition-all">settings</button>
+</div>
+</div>
+</div>
+</header>
+<div class="max-w-max-width mx-auto flex flex-col lg:flex-row min-h-[calc(100vh-80px)]">
+<!-- SideNavBar -->
+<aside class="hidden lg:flex flex-col p-md gap-sm bg-background border-r border-white/5 h-auto w-64 shrink-0">
+<div class="mb-lg p-sm">
+<div class="flex items-center gap-sm mb-xs">
+<img alt="User Profile" class="w-10 h-10 rounded-full grayscale hover:grayscale-0 transition-all duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2x2Ol3aBrBtJaC9vjBgMmCtVkylnFTYT7muQ9jBXOq_XIBt1cNKAdS3EaBDg4JbvfQ3ILcvq0ntsZTJGz1fwgILklZnh-bKYGezmu71vZJyLG0lul3aU0C9TJr5cg2WbKl3HpAwVFs3E-Xgr4QyhccdyHncFpj5kkD1FYem7xGjAruX5HYqwuEz3j4mioguKgczAVEde_JLYR8OWw9sgr2uaUzWEGbFoigZGu-mqBWY7tQoLtSCvGeGOiHoFHVQBn2x6ycxNhbBWG"/>
+<div>
+<p class="font-label-md text-label-md font-bold text-on-surface">Context Engine</p>
+<p class="font-body-sm text-body-sm text-secondary">RAG v2.4 Active</p>
+</div>
+</div>
+</div>
+<button class="bg-primary text-background py-sm px-md rounded-lg mb-md font-bold text-label-md flex items-center justify-center gap-sm active:scale-95 duration-100 shadow-[0_0_15px_rgba(0,200,83,0.3)]">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+            New Analysis
+        </button>
+<div class="flex flex-col gap-xs">
+<a class="bg-white/5 text-primary rounded-lg font-bold p-sm flex items-center gap-md border border-white/5" href="#">
+<span class="material-symbols-outlined">search_spark</span>
+<span class="font-label-md text-label-md">Intelligence</span>
+</a>
+<a class="text-on-surface-variant hover:bg-white/5 transition-colors p-sm rounded-lg flex items-center gap-md" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md text-label-md">History</span>
+</a>
+<a class="text-on-surface-variant hover:bg-white/5 transition-colors p-sm rounded-lg flex items-center gap-md" href="#">
+<span class="material-symbols-outlined">database</span>
+<span class="font-label-md text-label-md">Knowledge Base</span>
+</a>
+<a class="text-on-surface-variant hover:bg-white/5 transition-colors p-sm rounded-lg flex items-center gap-md" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 p-gutter lg:p-margin-desktop overflow-y-auto pb-24 lg:pb-margin-desktop">
+<div class="flex flex-col gap-lg">
+<!-- Primary Answer Card -->
+<section class="glass-card p-lg rounded-xl shadow-2xl relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary shadow-[0_0_15px_rgba(0,200,83,0.8)]"></div>
+<div class="flex justify-between items-start mb-md">
+<div class="flex items-center gap-sm bg-primary/10 px-sm py-1 rounded-full border border-primary/30">
+<span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-primary font-label-sm text-label-sm uppercase tracking-wider">Factual Confidence</span>
+</div>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Query: "NAV &amp; Exit Load SBI Bluechip"</span>
+</div>
+<h1 class="font-headline-md text-headline-md text-on-surface mb-sm">SBI Bluechip Fund Direct Growth</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+                    The current Net Asset Value (NAV) for the SBI Bluechip Fund - Direct Plan - Growth is <strong class="text-primary">₹72.45</strong> (as of the latest market close). The fund carries an exit load of <strong class="text-primary">1.00%</strong> if units are redeemed or switched out within 1 year (365 days) from the date of allotment. Redemptions after 1 year incur no exit load.
+                </p>
+</section>
+<!-- KPI Tiles - Bento Grid style -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div class="glass-card p-lg rounded-xl flex items-center justify-between group hover:border-primary transition-all cursor-default">
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant mb-base">Current NAV</p>
+<h2 class="font-display text-headline-lg text-primary tracking-tight">₹72.45</h2>
+<p class="font-label-sm text-label-sm text-primary flex items-center gap-xs mt-base">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                            +0.85% (1D)
+                        </p>
+</div>
+<div class="w-24 h-12">
+<svg class="w-full h-full stroke-primary fill-none stroke-2 sparkline-glow" viewbox="0 0 100 40">
+<path d="M0,35 Q10,32 20,38 T40,25 T60,20 T80,10 T100,5"></path>
+</svg>
+</div>
+</div>
+<div class="glass-card p-lg rounded-xl flex items-center group hover:border-primary transition-all cursor-default">
+<div class="mr-lg bg-white/5 p-md rounded-xl">
+<span class="material-symbols-outlined text-primary text-[32px]">door_front</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant mb-base">Exit Load</p>
+<h2 class="font-display text-headline-lg text-on-surface tracking-tight">1.00%</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-base">Applicable if redeemed &lt; 365 days</p>
+</div>
+</div>
+</div>
+<!-- Evidence Card -->
+<section class="bg-surface-container-low border border-white/5 rounded-xl overflow-hidden shadow-xl">
+<div class="bg-surface-container-highest px-md py-sm flex justify-between items-center border-b border-white/5">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant">description</span>
+<span class="font-label-md text-label-md text-on-surface">Source: Scheme Information Document</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Ingested: 2 hours ago</span>
+</div>
+<div class="p-lg">
+<div class="flex items-start gap-md mb-md">
+<div class="w-12 h-12 shrink-0 bg-white/90 border border-white/10 rounded p-2 overflow-hidden flex items-center justify-center">
+<img alt="SBI Mutual Fund" class="max-w-full h-auto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPrpYYVL5IHeZSdqKjcoFhGcEByoA7u1r1Y7n0AID_Aa7cOYohG_EyFgz5L9PasUkGSQP6lqQYqQFTgSYsvW1dfpZg0bqn9UQuwBC7ZA8M10gijSg0mugtj8594VSP5PzADf0qlt3beuVfeWdiXvje3fXQJpNRGO-MIevAXv8Dr0TP2PAJ1LHh8lm6N-MyugZUwdKg5dSYzsxaPePRYecBgPZjnZ1qQ0VnWBDqDdLVkkwPbwBiKAmymCkFKhPHp27b16eeJYrqtp5H"/>
+</div>
+<div>
+<h3 class="font-label-md text-label-md text-on-surface font-bold">SBI Mutual Fund - Official Fund Disclosure</h3>
+<p class="text-on-surface-variant font-label-sm text-label-sm">Document ID: SID-BLUE-2024-Q1</p>
+</div>
+</div>
+<blockquote class="border-l-4 border-primary/40 pl-md py-sm bg-white/5 rounded-r-lg">
+<p class="font-body-sm text-body-sm text-on-surface-variant italic leading-relaxed">
+                            "...(ii) For redemption/switch-out of units on or before 1 year from the date of allotment - <span class="text-on-surface">1.00%</span>; (iii) For redemption/switch-out of units after 1 year from the date of allotment - <span class="text-primary font-bold">NIL</span>. The NAV will be declared on every business day based on the closing price of the underlying securities..."
+                        </p>
+</blockquote>
+<div class="mt-md flex justify-end">
+<button class="text-primary font-bold font-label-md text-label-md flex items-center gap-xs hover:brightness-110">
+                            View full document
+                            <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+</button>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Context-Aware Sidebar -->
+<aside class="w-full lg:w-80 p-gutter lg:p-margin-desktop bg-surface-container-low/20 lg:border-l border-white/5">
+<h3 class="font-label-md text-label-md font-bold text-on-surface-variant uppercase tracking-widest mb-md opacity-80">Query Context</h3>
+<div class="flex flex-col gap-lg">
+<!-- Detected Entity -->
+<div>
+<p class="font-label-sm text-label-sm text-secondary mb-xs">Detected Fund</p>
+<div class="bg-surface-container-highest p-sm rounded-lg flex items-center gap-sm border border-white/5">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">SBI Bluechip</span>
+</div>
+</div>
+<!-- Intent -->
+<div>
+<p class="font-label-sm text-label-sm text-secondary mb-xs">Intent Classification</p>
+<div class="flex flex-wrap gap-xs">
+<span class="bg-white/5 text-primary px-sm py-1 rounded-full text-label-sm font-bold border border-primary/20">Performance</span>
+<span class="bg-white/5 text-primary px-sm py-1 rounded-full text-label-sm font-bold border border-primary/20">Costs</span>
+</div>
+</div>
+<!-- Metadata -->
+<div class="border-t border-white/5 pt-md">
+<p class="font-label-sm text-label-sm text-secondary mb-sm">Engine Metadata</p>
+<ul class="flex flex-col gap-sm">
+<li class="flex justify-between items-center text-body-sm font-body-sm">
+<span class="text-on-surface-variant">Chunks Analyzed</span>
+<span class="bg-surface-container-highest px-2 py-0.5 rounded font-data-tabular text-on-surface">4 chunks</span>
+</li>
+<li class="flex justify-between items-center text-body-sm font-body-sm">
+<span class="text-on-surface-variant">Response Latency</span>
+<span class="bg-surface-container-highest px-2 py-0.5 rounded font-data-tabular text-on-surface">1.2s</span>
+</li>
+<li class="flex justify-between items-center text-body-sm font-body-sm">
+<span class="text-on-surface-variant">Data Freshness</span>
+<span class="text-primary font-bold">Real-time</span>
+</li>
+</ul>
+</div>
+<!-- Action Button -->
+<button class="w-full border border-primary/50 text-primary py-sm px-md rounded-lg font-bold text-label-md flex items-center justify-center gap-sm hover:bg-primary/10 transition-colors shadow-[0_0_10px_rgba(0,200,83,0.1)]">
+<span class="material-symbols-outlined">analytics</span>
+                Deep Dive Analysis
+            </button>
+</div>
+</aside>
+</div>
+<!-- BottomNavBar Mobile -->
+<nav class="lg:hidden fixed bottom-0 w-full z-50 flex justify-around items-center h-16 px-4 pb-safe bg-background/90 backdrop-blur-2xl border-t border-white/5 shadow-2xl">
+<div class="flex flex-col items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+<span class="font-label-sm text-label-sm font-bold">Ask</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-sm text-label-sm">History</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">info</span>
+<span class="font-label-sm text-label-sm">Metadata</span>
+</div>
+</nav>
+</body></html>

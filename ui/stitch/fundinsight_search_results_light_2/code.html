@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FundInsight | Financial Terminal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&amp;family=Inter:wght@400;600&amp;family=Hanken+Grotesk:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-on-surface": "#f0f1f2",
+                        "secondary": "#586062",
+                        "on-primary-container": "#004c1b",
+                        "surface-variant": "#e1e3e4",
+                        "surface": "#f8f9fa",
+                        "outline-variant": "#bbcbb8",
+                        "on-tertiary-fixed": "#181c22",
+                        "primary-fixed-dim": "#3ce36a",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#edeeef",
+                        "background": "#f8f9fa", 
+                        "inverse-primary": "#3ce36a",
+                        "on-tertiary-container": "#3d4148",
+                        "on-secondary-container": "#5d6466",
+                        "tertiary": "#5b5e66",
+                        "error": "#ba1a1a",
+                        "primary": "#00c853", 
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d9dadb",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#e7e8e9",
+                        "secondary-container": "#dae1e3",
+                        "inverse-surface": "#2e3132",
+                        "surface-bright": "#f8f9fa",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#c3c6cf",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#dfe2eb",
+                        "tertiary-container": "#aaadb6",
+                        "secondary-fixed": "#dde4e6",
+                        "on-surface-variant": "#3c4a3c",
+                        "primary-fixed": "#69ff87",
+                        "on-primary-fixed-variant": "#00531e",
+                        "on-secondary-fixed-variant": "#41484a",
+                        "surface-tint": "#006e2a",
+                        "outline": "#6c7b6a",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#191c1d",
+                        "on-primary-fixed": "#002108",
+                        "secondary-fixed-dim": "#c1c8ca",
+                        "surface-container-highest": "#e1e3e4",
+                        "surface-container-low": "#f3f4f5",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#161d1f",
+                        "primary-container": "#00c853",
+                        "on-surface": "#191c1d",
+                        "on-tertiary-fixed-variant": "#43474e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "sm": "8px",
+                        "max-width": "1200px",
+                        "xl": "32px",
+                        "base": "4px",
+                        "gutter": "16px",
+                        "margin-desktop": "32px",
+                        "xxl": "48px",
+                        "margin-mobile": "16px",
+                        "lg": "24px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "headline-lg-mobile": ["Manrope"],
+                        "headline-lg": ["Manrope"],
+                        "data-tabular": ["Inter"],
+                        "label-md": ["Hanken Grotesk"],
+                        "display": ["Manrope"],
+                        "body-sm": ["Inter"],
+                        "label-sm": ["Hanken Grotesk"],
+                        "body-md": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #f8f9fa;
+            color: #191c1d;
+            overflow-x: hidden;
+        }
+
+        /* Subtle Data Grid Background for Light Theme */
+        .data-grid-bg {
+            background-image: 
+                linear-gradient(to right, #e1e3e4 1px, transparent 1px),
+                linear-gradient(to bottom, #e1e3e4 1px, transparent 1px);
+            background-size: 40px 40px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+        .glass-card {
+            background: #ffffff;
+            border: 1px solid #e1e3e4;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+        }
+
+        .primary-glow {
+            box-shadow: 0px 10px 30px rgba(0, 200, 83, 0.08);
+            border: 1px solid rgba(0, 200, 83, 0.2);
+        }
+
+        .sparkline-gradient {
+            background: linear-gradient(180deg, rgba(0, 200, 83, 0.1) 0%, rgba(0, 200, 83, 0) 100%);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+<!-- Background Utility -->
+<div class="data-grid-bg"></div>
+<!-- TopAppBar -->
+<header class="fixed top-0 z-50 w-full bg-white/90 backdrop-blur-xl border-b border-surface-container-highest h-20">
+<div class="flex justify-between items-center px-gutter w-full max-w-max-width mx-auto h-full">
+<div class="flex items-center gap-md">
+<span class="font-headline-md text-headline-md font-extrabold text-primary tracking-tight">FundInsight</span>
+</div>
+<div class="hidden md:flex items-center bg-surface-container-low rounded-full px-md py-xs w-96 border border-surface-container-highest">
+<span class="material-symbols-outlined text-secondary mr-xs" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-sm w-full placeholder:text-secondary" placeholder="Search markets, funds, or analysis..." type="text"/>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-sm rounded-full hover:bg-black/5 transition-all duration-200 active:scale-95">
+<span class="material-symbols-outlined text-on-surface" data-icon="account_circle">account_circle</span>
+</button>
+<button class="p-sm rounded-full hover:bg-black/5 transition-all duration-200 active:scale-95">
+<span class="material-symbols-outlined text-on-surface" data-icon="settings">settings</span>
+</button>
+</div>
+</div>
+</header>
+<div class="flex min-h-screen pt-20">
+<!-- SideNavBar -->
+<aside class="hidden lg:flex flex-col p-md gap-sm fixed left-0 h-[calc(100vh-80px)] w-64 bg-white border-r border-surface-container-highest">
+<div class="mb-lg px-sm">
+<div class="flex items-center gap-sm mb-xs">
+<div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="bolt" data-weight="fill" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface font-semibold">Context Engine</p>
+<p class="font-body-sm text-body-sm text-secondary">RAG v2.4 Active</p>
+</div>
+</div>
+</div>
+<nav class="flex flex-col gap-xs flex-1">
+<a class="flex items-center gap-sm p-sm bg-primary/10 text-primary rounded-lg font-bold transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="search_spark">search_spark</span>
+<span class="font-label-md text-label-md">Intelligence</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-secondary hover:bg-surface-container-low rounded-lg transition-colors active:scale-98" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-md text-label-md">History</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-secondary hover:bg-surface-container-low rounded-lg transition-colors active:scale-98" href="#">
+<span class="material-symbols-outlined" data-icon="database">database</span>
+<span class="font-label-md text-label-md">Knowledge Base</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-secondary hover:bg-surface-container-low rounded-lg transition-colors active:scale-98" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+<button class="mt-auto w-full bg-primary text-on-primary font-label-md text-label-md py-md rounded-xl hover:bg-primary/90 active:scale-95 transition-all shadow-lg shadow-primary/10">
+                New Analysis
+            </button>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 ml-0 lg:ml-64 p-gutter max-w-max-width mx-auto w-full pb-24">
+<!-- Terminal Header -->
+<div class="mb-xl">
+<div class="flex items-center gap-sm text-primary mb-sm">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+<span class="font-label-md text-label-md tracking-[0.2em] uppercase font-bold">Executive Intelligence Report</span>
+</div>
+<h1 class="font-display text-display text-on-surface">Q3 Equity Performance Analysis</h1>
+<p class="text-secondary font-body-lg text-body-lg mt-sm max-w-2xl">Real-time synthesis of market volatility, sectoral rotation, and institutional capital flow patterns for the current quarter.</p>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-lg">
+<!-- Primary Answer Card (Groww Light Theme) -->
+<div class="md:col-span-8 glass-card primary-glow rounded-xl p-xl flex flex-col gap-md relative overflow-hidden bg-white">
+<div class="absolute top-0 right-0 p-md opacity-5">
+<span class="material-symbols-outlined text-6xl" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<div class="flex items-center gap-sm text-primary">
+<span class="material-symbols-outlined" data-icon="chat_bubble" data-weight="fill" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+<span class="font-label-md text-label-md font-bold">AI Synthesis</span>
+</div>
+<div class="space-y-md">
+<p class="font-headline-md text-headline-md text-on-surface leading-relaxed">
+                            The current market regime shows <span class="text-primary font-bold">high-velocity rotation</span> into defensive sectors. Institutional accumulation in ESG-linked commodities has increased by <span class="font-data-tabular font-bold">14.2%</span> since the FOMC announcement.
+                        </p>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-md pt-md">
+<div class="bg-surface-container-low border border-surface-container-highest p-md rounded-lg">
+<p class="text-secondary font-label-sm text-label-sm">BULLISH INDICATOR</p>
+<p class="font-data-tabular text-headline-md text-primary font-bold">+8.4%</p>
+<p class="text-body-sm text-body-sm text-secondary">Tech Volume</p>
+</div>
+<div class="bg-surface-container-low border border-surface-container-highest p-md rounded-lg">
+<p class="text-secondary font-label-sm text-label-sm">RISK LEVEL</p>
+<p class="font-data-tabular text-headline-md text-on-surface font-bold">LOW</p>
+<p class="text-body-sm text-body-sm text-secondary">Volatility Index</p>
+</div>
+<div class="bg-surface-container-low border border-surface-container-highest p-md rounded-lg">
+<p class="text-secondary font-label-sm text-label-sm">LIQUIDITY</p>
+<p class="font-data-tabular text-headline-md text-on-surface font-bold">$4.2B</p>
+<p class="text-body-sm text-body-sm text-secondary">Net Inflow</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Market Snapshot Column -->
+<div class="md:col-span-4 flex flex-col gap-lg">
+<!-- Stock Card 1 -->
+<div class="glass-card rounded-xl p-md border border-surface-container-highest hover:border-primary transition-all cursor-pointer group bg-white">
+<div class="flex justify-between items-start mb-sm">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">NVDA</h3>
+<p class="text-secondary font-body-sm text-body-sm">NVIDIA Corp</p>
+</div>
+<div class="text-right">
+<p class="font-data-tabular text-primary font-bold">124.58</p>
+<p class="text-primary font-label-sm text-label-sm font-semibold">+3.12%</p>
+</div>
+</div>
+<div class="h-16 w-full relative overflow-hidden rounded-md bg-surface-container-low">
+<div class="absolute bottom-0 left-0 w-full h-1/2 sparkline-gradient"></div>
+<svg class="w-full h-full stroke-primary" preserveaspectratio="none" viewbox="0 0 100 40">
+<path d="M0,35 Q10,32 20,28 T40,25 T60,15 T80,10 T100,5" fill="none" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<!-- Stock Card 2 -->
+<div class="glass-card rounded-xl p-md border border-surface-container-highest hover:border-primary transition-all cursor-pointer group bg-white">
+<div class="flex justify-between items-start mb-sm">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">AAPL</h3>
+<p class="text-secondary font-body-sm text-body-sm">Apple Inc</p>
+</div>
+<div class="text-right">
+<p class="font-data-tabular text-primary font-bold">228.14</p>
+<p class="text-primary font-label-sm text-label-sm font-semibold">+1.45%</p>
+</div>
+</div>
+<div class="h-16 w-full relative overflow-hidden rounded-md bg-surface-container-low">
+<div class="absolute bottom-0 left-0 w-full h-1/2 sparkline-gradient"></div>
+<svg class="w-full h-full stroke-primary" preserveaspectratio="none" viewbox="0 0 100 40">
+<path d="M0,30 Q15,25 30,28 T50,20 T70,18 T100,10" fill="none" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- Analysis Details Section -->
+<div class="md:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-lg">
+<div class="glass-card rounded-xl p-lg bg-white">
+<span class="material-symbols-outlined text-primary mb-sm" data-icon="query_stats">query_stats</span>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-sm">Sector Allocation</h4>
+<div class="space-y-sm">
+<div class="flex justify-between items-center text-body-sm text-on-surface">
+<span>Technology</span>
+<span class="font-data-tabular font-bold">42%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 42%;"></div>
+</div>
+<div class="flex justify-between items-center text-body-sm text-on-surface">
+<span>Healthcare</span>
+<span class="font-data-tabular font-bold">18%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary/30" style="width: 18%;"></div>
+</div>
+</div>
+</div>
+<div class="glass-card rounded-xl p-lg overflow-hidden relative min-h-[200px] bg-white">
+<h4 class="font-headline-md text-headline-md text-on-surface mb-sm">Heatmap Pulse</h4>
+<img class="absolute inset-0 w-full h-full object-cover mix-blend-multiply opacity-20" data-alt="A professional financial heatmap visualization" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVqCicHJcKbJcg_lFDRcYUrKzBFoQ5BQn2EDxj_Jqd0lA_b4C8oVGBlAlzznLUcMWrNhhjR5qdKvT_sYS2bnNBG6H_GPxHnWLlx3CvID0N0HHy0sAIXMtpaU7OKNgKPPys6FrhpOG1KtM3JLJc3flt7kIjob1qtgF-MWZCJfvIMXRGrqZbT2-yg0sWx7ugbl5zCIIAc21JoxCDYreuGexO8vGchCv59QZVv1BE2P7ZxYPyESyKAXeDRBhQIkjS_S0cTmC2QQ9YX3J9"/>
+<div class="relative z-10">
+<p class="text-body-sm text-secondary mb-md">Market concentration is currently focused in Large-Cap Semiconductors.</p>
+<span class="text-primary font-label-md text-label-md font-bold cursor-pointer">View detailed map →</span>
+</div>
+</div>
+<div class="glass-card rounded-xl p-lg border border-primary/10 bg-white">
+<div class="flex items-center gap-sm mb-md">
+<span class="flex h-3 w-3 relative">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-30"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+</span>
+<h4 class="font-label-md text-label-md text-primary uppercase tracking-widest font-bold">Real-time Feed</h4>
+</div>
+<div class="space-y-md">
+<div class="border-l-2 border-primary/20 pl-md">
+<p class="font-label-sm text-label-sm text-secondary">09:42 AM</p>
+<p class="text-body-sm text-on-surface">Consumer sentiment index beats estimates by 2.1 pts.</p>
+</div>
+<div class="border-l-2 border-surface-container-highest pl-md">
+<p class="font-label-sm text-label-sm text-secondary">09:30 AM</p>
+<p class="text-body-sm text-on-surface">Market Open: SPY opens at +0.45% gap up.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="lg:hidden fixed bottom-0 w-full z-50 flex justify-around items-center h-16 px-4 pb-safe bg-white border-t border-surface-container-highest shadow-xl">
+<a class="flex flex-col items-center justify-center text-primary" href="#">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+<span class="font-label-sm text-label-sm font-semibold">Ask</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-sm text-label-sm">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary" href="#">
+<span class="material-symbols-outlined" data-icon="info">info</span>
+<span class="font-label-sm text-label-sm">Metadata</span>
+</a>
+</nav>
+<!-- FAB -->
+<div class="fixed bottom-20 right-6 lg:bottom-10 lg:right-10 z-40">
+<button class="bg-primary text-on-primary p-lg rounded-full shadow-2xl hover:bg-primary/90 active:scale-95 transition-all duration-200 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+</div>
+</body></html>

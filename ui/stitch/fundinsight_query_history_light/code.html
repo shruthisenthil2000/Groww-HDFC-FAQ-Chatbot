@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Manrope:wght@600;700;800&amp;family=Hanken+Grotesk:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-on-surface": "#f0f1f2",
+                        "secondary": "#586062",
+                        "on-primary-container": "#004c1b",
+                        "surface-variant": "#e1e3e4",
+                        "surface": "#f8f9fa",
+                        "outline-variant": "#bbcbb8",
+                        "on-tertiary-fixed": "#181c22",
+                        "primary-fixed-dim": "#3ce36a",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#edeeef",
+                        "background": "#f8f9fa",
+                        "inverse-primary": "#3ce36a",
+                        "on-tertiary-container": "#3d4148",
+                        "on-secondary-container": "#5d6466",
+                        "tertiary": "#5b5e66",
+                        "error": "#ba1a1a",
+                        "primary": "#006e2a",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d9dadb",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#e7e8e9",
+                        "secondary-container": "#dae1e3",
+                        "inverse-surface": "#2e3132",
+                        "surface-bright": "#f8f9fa",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#c3c6cf",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#dfe2eb",
+                        "tertiary-container": "#aaadb6",
+                        "secondary-fixed": "#dde4e6",
+                        "on-surface-variant": "#3c4a3c",
+                        "primary-fixed": "#69ff87",
+                        "on-primary-fixed-variant": "#00531e",
+                        "on-secondary-fixed-variant": "#41484a",
+                        "surface-tint": "#006e2a",
+                        "outline": "#6c7b6a",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#191c1d",
+                        "on-primary-fixed": "#002108",
+                        "secondary-fixed-dim": "#c1c8ca",
+                        "surface-container-highest": "#e1e3e4",
+                        "surface-container-low": "#f3f4f5",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#161d1f",
+                        "primary-container": "#00c853",
+                        "on-surface": "#191c1d",
+                        "on-tertiary-fixed-variant": "#43474e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "sm": "8px",
+                        "max-width": "1200px",
+                        "xl": "32px",
+                        "base": "4px",
+                        "gutter": "16px",
+                        "margin-desktop": "32px",
+                        "xxl": "48px",
+                        "margin-mobile": "16px",
+                        "lg": "24px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["inter"],
+                        "headline-md": ["manrope"],
+                        "headline-lg-mobile": ["manrope"],
+                        "headline-lg": ["manrope"],
+                        "data-tabular": ["inter"],
+                        "label-md": ["hankenGrotesk"],
+                        "display": ["manrope"],
+                        "body-sm": ["inter"],
+                        "label-sm": ["hankenGrotesk"],
+                        "body-md": ["inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "data-tabular": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "display": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "14px", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .data-grid-bg {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, #F3F4F6 1px, transparent 1px),
+                              linear-gradient(to bottom, #F3F4F6 1px, transparent 1px);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary-container selection:text-on-primary-container min-h-screen">
+<!-- TopAppBar -->
+<header class="bg-surface/80 backdrop-blur-xl border-b border-outline-variant docked full-width top-0 z-50 fixed w-full h-20">
+<div class="flex justify-between items-center px-gutter w-full max-w-max-width mx-auto h-full">
+<div class="flex items-center gap-md">
+<span class="font-headline-md text-headline-md font-extrabold text-primary tracking-tight">FundInsight</span>
+</div>
+<div class="hidden md:flex items-center flex-1 max-w-md mx-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container border-none rounded-full py-2 pl-10 pr-4 text-body-md focus:ring-2 focus:ring-primary focus:bg-white transition-all" placeholder="Search insights..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-sm rounded-full hover:bg-surface-container transition-all duration-200">
+<span class="material-symbols-outlined text-on-surface-variant">account_circle</span>
+</button>
+<button class="p-sm rounded-full hover:bg-surface-container transition-all duration-200">
+<span class="material-symbols-outlined text-on-surface-variant">settings</span>
+</button>
+</div>
+</div>
+</header>
+<div class="flex pt-20 pb-16 lg:pb-0 min-h-screen">
+<!-- SideNavBar -->
+<aside class="hidden lg:flex flex-col p-md gap-sm bg-surface-container-low border-r border-outline-variant docked left-0 h-[calc(100vh-80px)] w-64 fixed overflow-y-auto">
+<div class="flex items-center gap-md mb-xl p-sm">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container">psychology</span>
+</div>
+<div>
+<p class="font-headline-md text-[16px] text-primary">Context Engine</p>
+<p class="font-body-sm text-body-sm text-secondary">RAG v2.4 Active</p>
+</div>
+</div>
+<nav class="flex flex-col gap-xs flex-1">
+<a class="flex items-center gap-md p-md text-secondary hover:bg-surface-container-high transition-colors rounded-lg font-label-md" href="#">
+<span class="material-symbols-outlined">search_spark</span> Intelligence
+                </a>
+<a class="flex items-center gap-md p-md bg-primary text-on-primary rounded-lg font-bold font-label-md shadow-sm" href="#">
+<span class="material-symbols-outlined">history</span> History
+                </a>
+<a class="flex items-center gap-md p-md text-secondary hover:bg-surface-container-high transition-colors rounded-lg font-label-md" href="#">
+<span class="material-symbols-outlined">database</span> Knowledge Base
+                </a>
+<a class="flex items-center gap-md p-md text-secondary hover:bg-surface-container-high transition-colors rounded-lg font-label-md" href="#">
+<span class="material-symbols-outlined">settings</span> Settings
+                </a>
+</nav>
+<button class="mt-auto bg-primary text-on-primary py-md px-lg rounded-xl font-bold flex items-center justify-center gap-sm hover:shadow-lg active:scale-95 transition-all">
+<span class="material-symbols-outlined">add</span> New Analysis
+            </button>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 lg:ml-64 data-grid-bg relative bg-white">
+<div class="max-w-max-width mx-auto px-gutter py-xl">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-md mb-xl">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Analytics Timeline</h1>
+<p class="font-body-md text-body-md text-secondary mt-xs">Chronological record of your fund intelligence queries and AI-generated insights.</p>
+</div>
+<div class="flex items-center gap-sm">
+<div class="bg-surface border border-outline-variant rounded-lg p-base flex">
+<button class="px-md py-sm bg-primary text-on-primary rounded-md font-label-md">List</button>
+<button class="px-md py-sm text-secondary hover:bg-surface-container rounded-md font-label-md">Visual</button>
+</div>
+<button class="flex items-center gap-sm px-lg py-sm bg-white border border-outline-variant rounded-lg font-label-md hover:bg-surface-container transition-all shadow-sm">
+<span class="material-symbols-outlined text-[18px]">filter_list</span> Filter
+                        </button>
+</div>
+</div>
+<!-- Timeline Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-lg">
+<!-- Analytics Summary Card -->
+<div class="md:col-span-12 lg:col-span-4 glass-card rounded-xl p-lg flex flex-col justify-between">
+<div>
+<span class="font-label-sm text-primary uppercase tracking-widest font-bold">Performance Metrics</span>
+<h2 class="font-headline-md text-headline-md mt-sm text-on-surface">Search Efficiency</h2>
+<div class="mt-lg space-y-md">
+<div class="flex justify-between items-center border-b border-surface-container-highest pb-sm">
+<span class="text-secondary font-body-sm">Total Queries</span>
+<span class="font-data-tabular text-on-surface">1,284</span>
+</div>
+<div class="flex justify-between items-center border-b border-surface-container-highest pb-sm">
+<span class="text-secondary font-body-sm">Avg. Confidence</span>
+<span class="font-data-tabular text-primary">94.2%</span>
+</div>
+<div class="flex justify-between items-center border-b border-surface-container-highest pb-sm">
+<span class="text-secondary font-body-sm">Knowledge Coverage</span>
+<span class="font-data-tabular text-on-surface">82%</span>
+</div>
+</div>
+</div>
+<div class="mt-xl h-32 w-full relative">
+<img alt="Efficiency Trends" class="w-full h-full object-cover rounded-lg" data-alt="A striking digital visualization of a financial growth curve using a vibrant green line against a pristine white background. The chart features a subtle animated-style gradient fill and is set against a faint mathematical grid." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAicK2aNbUtEHVODnlA-OEQ5W1RjcyFbyiBns8jz6_EPhcGcye2RG7sQWgZsiinUTBKffIL_QsxDGTyOR5tM4CgHEKk2vBEp3zKbXZxVA_mUJfhsRM8Ygkn_ECU5Wwv8WK6gSIeh85WW_UPcd2zkLUvErwAkAHWAvUQWWU62yw8BQ-B15qfBWi23dpy64-ITezZHR-pUMWTs02TId74uQ1yTDgNqJCpz07L6n48X9MtObQsGCG-nOEwvuPhbBc7yUXcxfeTPo4nY1us"/>
+</div>
+</div>
+<!-- Timeline List -->
+<div class="md:col-span-12 lg:col-span-8 flex flex-col gap-md">
+<!-- Timeline Entry 1 -->
+<div class="glass-card rounded-xl p-lg hover:shadow-lg hover:border-primary/20 transition-all duration-300 group">
+<div class="flex flex-col md:flex-row justify-between gap-md">
+<div class="flex-1">
+<div class="flex items-center gap-sm mb-sm">
+<span class="bg-primary-container text-on-primary-container px-sm py-xs rounded text-[10px] font-bold uppercase tracking-wider">Growth Capital</span>
+<span class="text-secondary font-label-sm">Today, 10:42 AM</span>
+</div>
+<h3 class="font-headline-md text-[20px] text-on-surface group-hover:text-primary transition-colors">"Compare IRR of Tech-Series B vs. Green Energy for Q3"</h3>
+<p class="font-body-sm text-secondary mt-sm line-clamp-2">Analysis confirms Green Energy leads by 4.2% margin due to recent regulatory incentives. Tech sector shows volatility in late-stage valuations.</p>
+</div>
+<div class="flex md:flex-col items-center md:items-end justify-between md:justify-center gap-md min-w-[120px]">
+<div class="text-right">
+<p class="font-label-sm text-secondary">Confidence</p>
+<p class="font-data-tabular text-primary text-xl">98%</p>
+</div>
+<div class="flex gap-xs">
+<button class="p-xs rounded-full hover:bg-surface-container text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined text-[20px]">share</span></button>
+<button class="p-xs rounded-full hover:bg-surface-container text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined text-[20px]">bookmark</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline Entry 2 -->
+<div class="glass-card rounded-xl p-lg hover:shadow-lg hover:border-primary/20 transition-all duration-300 group">
+<div class="flex flex-col md:flex-row justify-between gap-md">
+<div class="flex-1">
+<div class="flex items-center gap-sm mb-sm">
+<span class="bg-surface-container-highest text-secondary px-sm py-xs rounded text-[10px] font-bold uppercase tracking-wider">Compliance</span>
+<span class="text-secondary font-label-sm">Yesterday, 4:15 PM</span>
+</div>
+<h3 class="font-headline-md text-[20px] text-on-surface group-hover:text-primary transition-colors">"List all exposure to offshore maritime logistics in Alpha Fund"</h3>
+<p class="font-body-sm text-secondary mt-sm line-clamp-2">Identified 3 primary holdings with total exposure of $14.2M. No immediate compliance red-flags detected under new jurisdiction rules.</p>
+</div>
+<div class="flex md:flex-col items-center md:items-end justify-between md:justify-center gap-md min-w-[120px]">
+<div class="text-right">
+<p class="font-label-sm text-secondary">Confidence</p>
+<p class="font-data-tabular text-primary text-xl">92%</p>
+</div>
+<div class="flex gap-xs">
+<button class="p-xs rounded-full hover:bg-surface-container text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined text-[20px]">share</span></button>
+<button class="p-xs rounded-full hover:bg-surface-container text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined text-[20px]">bookmark</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline Entry 3 -->
+<div class="glass-card rounded-xl p-lg hover:shadow-lg hover:border-primary/20 transition-all duration-300 group">
+<div class="flex flex-col md:flex-row justify-between gap-md">
+<div class="flex-1">
+<div class="flex items-center gap-sm mb-sm">
+<span class="bg-primary-container text-on-primary-container px-sm py-xs rounded text-[10px] font-bold uppercase tracking-wider">Asset Allocation</span>
+<span class="text-secondary font-label-sm">Oct 24, 2023</span>
+</div>
+<h3 class="font-headline-md text-[20px] text-on-surface group-hover:text-primary transition-colors">"Historical performance of ESG-compliant mid-caps (2020-2023)"</h3>
+<p class="font-body-sm text-secondary mt-sm line-clamp-2">Comprehensive data extraction complete. ESG-compliant funds outperformed baseline indices by 120bps on average across the period.</p>
+</div>
+<div class="flex md:flex-col items-center md:items-end justify-between md:justify-center gap-md min-w-[120px]">
+<div class="text-right">
+<p class="font-label-sm text-secondary">Confidence</p>
+<p class="font-data-tabular text-primary text-xl">86%</p>
+</div>
+<div class="flex gap-xs">
+<button class="p-xs rounded-full hover:bg-surface-container text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined text-[20px]">share</span></button>
+<button class="p-xs rounded-full hover:bg-surface-container text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined text-[20px]">bookmark</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Featured Analytics Visualization Section -->
+<section class="mt-xxl">
+<h2 class="font-headline-md text-headline-md mb-lg text-on-surface">Contextual Intent Mapping</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<div class="glass-card rounded-xl overflow-hidden group">
+<div class="h-48 relative overflow-hidden">
+<img alt="Intent Mapping" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A sophisticated 3D visualization showing floating translucent spheres of varying sizes representing investment categories." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB72aUHRTDQeSxQvzBs40RLG9h_wK1jZ092-uRkqUYdi1SwLoNJNQrfVfxSR6-MOb8bvsqJWbJH-5aOnbWd3YWsh--LlV3-I1DwqIg1ngBrWdMxBBHXRbtYV4JtgPXknjKLBLXei5q4uDqR1L3P3evWXice3yIQW7zA7lqrITBfOa0pjKkbvD1bctj9pH1MkApZlWk8xWQ0SUlFT5ukfuI6tL1RldrEv6z-vvRcPZ6-X84cEnMFNX7yxBz3F-K296x2gacFsDhZziyD"/>
+</div>
+<div class="p-lg">
+<h4 class="font-label-md text-primary font-bold">Query Clusters</h4>
+<p class="font-body-sm text-secondary mt-xs">Visualizing how your questions relate to specific fund sectors over time.</p>
+</div>
+</div>
+<div class="glass-card rounded-xl overflow-hidden group">
+<div class="h-48 relative overflow-hidden">
+<img alt="Data Lineage" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="An abstract and clean representation of a data audit trail, featuring sharp geometric nodes connected by glowing green filaments." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCoHvpF-n5R9M4UDSCLZ618nfwO-BLOlXjNk3pvzMhm_qgK-hZeO_932GheQrKVzQuUN5UzmlyedrCy3ZyBNMMrszuPYwjpoTjQuag7MlFne1X3I1mP5k9sATqxv3s-uWQgrZnoRnLwlJMPMTk5DyZDqALc9iEJMcNhfBkWpt2yQjoF3HVFV6VdvuMF03sr6y5A1yujX_N0IbmoIL580pOGr5VwVaZyIOnw_ZYZZEl6H0OTFnYwSvsThHVbzEpCkyCj9oaOmcyWliMe"/>
+</div>
+<div class="p-lg">
+<h4 class="font-label-md text-primary font-bold">Data Lineage</h4>
+<p class="font-body-sm text-secondary mt-xs">Trace every insight back to its original regulatory source or fund filing.</p>
+</div>
+</div>
+<div class="glass-card rounded-xl overflow-hidden group">
+<div class="h-48 relative overflow-hidden">
+<img alt="Security Logs" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A futuristic and highly detailed digital fingerprint made of micro-typography and binary patterns in shades of deep green." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDm9xefr9DXJd9uQ3vENdq_h7DjKAF_22JhQI2YX9fizpqpwe0RvP7A28n6mB_tjgCkZ2RHFppF50or05iuscMmK7LtLXywYIRip9irA8r3Nnicmzy3smbpFRaINWCtvbIWS6uPq--dF0Zv4v6A8S_0JdMmXp9Mhf4Iuyb6Qs4krK1t_adAFfXRPpghtH8Onq1KvHl3cYxvm8IYPr1l4JRAAj5fUpQSDh3jTp47QFN5kT99PfNU5Qgd5SfT5kf6wHchFmxYktcAE7Ph"/>
+</div>
+<div class="p-lg">
+<h4 class="font-label-md text-primary font-bold">Identity Logs</h4>
+<p class="font-body-sm text-secondary mt-xs">Audit history of which analysts accessed specific query snapshots.</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+<!-- BottomNavBar (Mobile) -->
+<nav class="lg:hidden fixed bottom-0 w-full z-50 flex justify-around items-center h-16 px-4 pb-safe bg-surface/90 backdrop-blur-2xl border-t border-outline-variant shadow-lg">
+<a class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="font-label-sm text-label-sm">Ask</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary font-bold transition-all" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-sm text-label-sm">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">info</span>
+<span class="font-label-sm text-label-sm">Metadata</span>
+</a>
+</nav>
+<!-- FAB (Contextual) -->
+<button class="fixed right-lg bottom-20 lg:bottom-lg bg-primary text-on-primary w-14 h-14 rounded-2xl shadow-xl flex items-center justify-center hover:scale-110 hover:shadow-2xl active:scale-95 transition-all z-40 group">
+<span class="material-symbols-outlined text-[28px]">search_spark</span>
+<span class="absolute right-full mr-md bg-inverse-surface text-inverse-on-surface px-md py-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap text-sm font-bold shadow-lg">Analyze New Fund</span>
+</button>
+</body></html>
