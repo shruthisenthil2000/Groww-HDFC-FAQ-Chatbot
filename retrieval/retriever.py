@@ -1,8 +1,4 @@
-```python
-"""
-RAG Retriever — OpenAI Embedding Version (Render Free Tier Safe)
-"""
-
+```python id="h3k9pw"
 from __future__ import annotations
 
 import logging
@@ -43,10 +39,6 @@ _HDFC_FUND_IDS: frozenset[str] = frozenset({
 
 
 def get_openai_embedding(text: str) -> list[float]:
-    """
-    Generate embedding using OpenAI API.
-    """
-
     response = client.embeddings.create(
         model=EMBEDDING_MODEL,
         input=text,
@@ -61,9 +53,6 @@ def retrieve(
     fund_id: str | None = None,
     filter_section_type: str | None = None,
 ) -> list[dict]:
-    """
-    Retrieve top matching chunks from FAISS.
-    """
 
     logger.info(
         "Retrieving top_k=%d fund_id=%s section_filter=%s query=%r",
@@ -81,7 +70,6 @@ def retrieve(
         filter_section_type=filter_section_type,
     )
 
-    # Hard grounding filter
     before_grounding = len(results)
 
     results = [
@@ -114,7 +102,6 @@ def retrieve(
             logger.info("No chunks above relevance threshold")
             return []
 
-    # fund-specific filtering
     if fund_id is not None:
 
         if filter_section_type is not None:
