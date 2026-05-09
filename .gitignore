@@ -42,3 +42,9 @@ corpus/index/
 
 # ── macOS ────────────────────────────────────────────────────────────────────
 .DS_Store
+
+
+# Node
+node_modules/
+frontend/node_modules/
+server/node_modules/
