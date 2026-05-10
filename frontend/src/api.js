@@ -2,7 +2,8 @@
  * API client — all calls proxied to FastAPI backend (/api/*)
  */
 
-const BASE = '/api'
+const BASE =
+  import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
 /**
  * POST /api/query
