@@ -9,6 +9,7 @@ import {
 } from './services/navService.js'
 
 const PORT = Number(process.env.API_GATEWAY_PORT || 8090)
+
 const FASTAPI_TARGET =
   process.env.FASTAPI_URL || 'http://127.0.0.1:8000'
 
@@ -40,6 +41,31 @@ app.get('/health', (_req, res) => {
     service: 'groww-hdfc-api-gateway'
   })
 })
+
+/* FASTAPI DOCS */
+app.use(
+  '/docs',
+  createProxyMiddleware({
+    target: FASTAPI_TARGET,
+    changeOrigin: true
+  })
+)
+
+app.use(
+  '/redoc',
+  createProxyMiddleware({
+    target: FASTAPI_TARGET,
+    changeOrigin: true
+  })
+)
+
+app.use(
+  '/openapi.json',
+  createProxyMiddleware({
+    target: FASTAPI_TARGET,
+    changeOrigin: true
+  })
+)
 
 /* CACHE API */
 app.get('/api/nav/all', (_req, res) => {
