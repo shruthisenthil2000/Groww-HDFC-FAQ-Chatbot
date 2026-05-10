@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import logging
 
-from openai import OpenAI
+from sentence_transformers import SentenceTransformer
 
 from config import (
     EMBEDDING_MODEL,
-    OPENAI_API_KEY,
     RETRIEVER_TOP_K,
 )
 
@@ -14,7 +13,7 @@ from ingestion.phase2.indexer import search_faiss
 
 logger = logging.getLogger(__name__)
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+model = SentenceTransformer(EMBEDDING_MODEL)
 
 _MIN_SCORE: float = 0.45
 
@@ -37,13 +36,11 @@ _HDFC_FUND_IDS: frozenset[str] = frozenset({
 })
 
 
-def get_openai_embedding(text: str) -> list[float]:
-    response = client.embeddings.create(
-        model=EMBEDDING_MODEL,
-        input=text,
-    )
-
-    return response.data[0].embedding
+def get_embedding(text: str) -> list[float]:
+    return model.encode(
+        text,
+        normalize_embeddings=True,
+    ).tolist()
 
 
 def retrieve(
@@ -61,7 +58,7 @@ def retrieve(
         query,
     )
 
-    query_embedding = get_openai_embedding(query)
+    query_embedding = get_embedding(query)
 
     results = search_faiss(
         query_embedding,
