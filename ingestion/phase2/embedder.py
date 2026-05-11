@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from sentence_transformers import SentenceTransformer
-
 from config import EMBEDDING_DIM, EMBEDDING_MODEL
 
 _model = SentenceTransformer(EMBEDDING_MODEL)
