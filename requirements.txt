@@ -8,3 +8,4 @@ groq
 python-multipart
 rapidfuzz
 beautifulsoup4
+sentence-transformers==5.1.2
