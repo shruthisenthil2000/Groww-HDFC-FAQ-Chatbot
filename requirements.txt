@@ -2,15 +2,9 @@ fastapi
 uvicorn[standard]
 pydantic
 python-dotenv
-sentence-transformers
-faiss-cpu
 numpy
 pandas
 groq
 python-multipart
 rapidfuzz
 beautifulsoup4
-scipy
-scikit-learn
-torch
-transformers
