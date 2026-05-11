@@ -10,3 +10,4 @@ rapidfuzz
 beautifulsoup4
 scikit-learn
 faiss-cpu
+sentence-transformers
