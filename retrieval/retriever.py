@@ -1,169 +1,73 @@
 from __future__ import annotations
 
-import logging
-
 from sentence_transformers import SentenceTransformer
 
-from config import (
-    EMBEDDING_MODEL,
-    RETRIEVER_TOP_K,
+from config import EMBEDDING_MODEL, RETRIEVER_TOP_K
+from ingestion.phase2.indexer import search_faiss
+from retrieval.scheme_matcher import (
+    SCHEME_MATCH_MIN_SCORE,
+    best_scheme_match,
+    preferred_sections_for_query,
+    retrieval_query_variants,
 )
 
-from ingestion.phase2.indexer import search_faiss
-
-logger = logging.getLogger(__name__)
-
-model = SentenceTransformer(EMBEDDING_MODEL)
-
-_MIN_SCORE: float = 0.45
-
-_HDFC_FUND_IDS: frozenset[str] = frozenset({
-    "hdfc_flexi_cap",
-    "hdfc_focused",
-    "hdfc_elss",
-    "hdfc_large_cap",
-    "hdfc_silver_etf_fof",
-    "hdfc_small_cap",
-    "hdfc_defence",
-    "hdfc_gold_etf_fof",
-    "hdfc_housing_opportunities",
-    "hdfc_nifty50_index",
-    "hdfc_balanced_advantage",
-    "hdfc_pharma_healthcare",
-    "hdfc_bse_sensex_index",
-    "hdfc_short_term_debt",
-    "hdfc_mid_cap",
-})
+_model = SentenceTransformer(EMBEDDING_MODEL)
+_SECTION_BONUS = 0.08
 
 
-def get_embedding(text: str) -> list[float]:
-    return model.encode(
-        text,
-        normalize_embeddings=True,
-    ).tolist()
+def embed_query(text: str) -> list[float]:
+    return _model.encode(text, normalize_embeddings=True).tolist()
 
 
-def retrieve(
-    query: str,
-    top_k: int = RETRIEVER_TOP_K,
-    fund_id: str | None = None,
-    filter_section_type: str | None = None,
-) -> list[dict]:
-
-    logger.info(
-        "Retrieving top_k=%d fund_id=%s section_filter=%s query=%r",
-        top_k,
-        fund_id,
-        filter_section_type,
-        query,
-    )
-
-    query_embedding = get_embedding(query)
-
-    results = search_faiss(
-        query_embedding,
-        top_k=top_k,
-        filter_section_type=filter_section_type,
-    )
-
-    before_grounding = len(results)
-
-    results = [
-        r for r in results
-        if r.get("fund_id", "") in _HDFC_FUND_IDS
-    ]
-
-    if len(results) < before_grounding:
-        logger.warning(
-            "Removed %d non-HDFC chunks",
-            before_grounding - len(results),
-        )
-
-    if not results:
-        logger.warning("No grounded HDFC chunks remain")
-        return []
-
-    router_anchored = (
-        filter_section_type is not None
-        or fund_id is not None
-    )
-
-    if not router_anchored:
-        results = [
-            r for r in results
-            if r.get("score", 0) >= _MIN_SCORE
-        ]
-
-        if not results:
-            logger.info("No chunks above relevance threshold")
-            return []
-
-    if fund_id is not None:
-
-        if filter_section_type is not None:
-
-            all_section = search_faiss(
-                query_embedding,
-                top_k=85,
-                filter_section_type=filter_section_type,
-            )
-
-            filtered = [
-                r for r in all_section
-                if r.get("fund_id") == fund_id
-            ]
-
-        else:
-            filtered = [
-                r for r in results
-                if r.get("fund_id") == fund_id
-            ]
-
-        if filtered:
-            logger.info(
-                "%d chunks after fund filter (%s)",
-                len(filtered),
-                fund_id,
-            )
-
-            return filtered[:top_k]
-
-        logger.warning(
-            "fund_id=%r not found; falling back",
-            fund_id,
-        )
-
-    logger.info("%d chunks retrieved", len(results))
-
-    return results[:top_k]
+def embed_texts(texts: list[str]) -> list[list[float]]:
+    vecs = _model.encode(texts, normalize_embeddings=True)
+    return [v.tolist() for v in vecs]
 
 
-if __name__ == "__main__":
+def _prioritize_fund_id(chunks: list[dict], fund_id: str) -> list[dict]:
+    """Stable re-order: all chunks for fund_id first (by score), then the rest."""
+    same = [c for c in chunks if c.get("fund_id") == fund_id]
+    other = [c for c in chunks if c.get("fund_id") != fund_id]
+    same.sort(key=lambda x: float(x.get("score", 0.0)), reverse=True)
+    other.sort(key=lambda x: float(x.get("score", 0.0)), reverse=True)
+    out: list[dict] = []
+    seen: set[str] = set()
+    for c in same + other:
+        cid = c.get("chunk_id") or ""
+        if cid and cid not in seen:
+            seen.add(cid)
+            out.append(c)
+    return out
 
-    import sys
 
-    from retrieval.router import route
+def retrieve_docs(query: str, top_k: int | None = None) -> list[dict]:
+    """
+    Semantic search over FAISS with query variants (synonyms, section intents,
+    topic hints, fuzzy scheme name). Merges hits across variants (best score
+    per chunk_id), then prioritizes the fuzzy-matched scheme before global rank.
+    """
+    k = top_k if top_k is not None else RETRIEVER_TOP_K
+    fetch_k = max(k * 5, 96)
+    merged: dict[str, dict] = {}
+    preferred_sections = preferred_sections_for_query(query)
 
-    query = (
-        " ".join(sys.argv[1:])
-        or "What is the expense ratio of HDFC Mid Cap Fund?"
-    )
+    for qtext in retrieval_query_variants(query):
+        emb = embed_query(qtext)
+        for c in search_faiss(emb, top_k=fetch_k):
+            cid = c.get("chunk_id") or ""
+            if not cid:
+                continue
+            prev = merged.get(cid)
+            score = float(c.get("score", 0.0))
+            if prev is None or score > float(prev.get("score", 0.0)):
+                merged[cid] = c
 
-    detected_fund, detected_section = route(query)
-
-    print(f"\nQuery: {query}")
-    print(f"Detected fund: {detected_fund}")
-    print(f"Detected section: {detected_section}\n")
-
-    for r in retrieve(
-        query,
-        fund_id=detected_fund,
-        filter_section_type=detected_section,
-    ):
-
-        print(
-            f"[{r['score']:.4f}] "
-            f"[{r['section_type']}] "
-            f"[{r['fund_id']}] "
-            f"{r['text'][:90]}..."
-        )
+    ranked = list(merged.values())
+    for c in ranked:
+        if c.get("section_type") in preferred_sections:
+            c["score"] = float(c.get("score", 0.0)) + _SECTION_BONUS
+    ranked.sort(key=lambda x: float(x.get("score", 0.0)), reverse=True)
+    _, matched_fid, sc = best_scheme_match(query)
+    if matched_fid and sc >= SCHEME_MATCH_MIN_SCORE:
+        ranked = _prioritize_fund_id(ranked, matched_fid)
+    return ranked[:k]

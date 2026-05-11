@@ -15,6 +15,9 @@ build/
 *.egg
 .eggs/
 
+# ── Local pip --target installs (dev smoke tests) ───────────────────────────
+.deps/
+
 # ── Virtual environments ────────────────────────────────────────────────────
 .venv/
 venv/

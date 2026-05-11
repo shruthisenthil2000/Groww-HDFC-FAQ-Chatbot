@@ -29,8 +29,8 @@ Chunk schema (per architecture.md Phase 2.2.4)
   "fund_name":     str,
   "groww_url":     str,
   "doc_type":      "groww_fund_page",
-  "section_type":  "fund_overview" | "exit_load_tax" | "investment_objective"
-                   | "about" | "fund_manager" | "fund_house",
+  "section_type":  "fund_overview" | "holdings" | "asset_allocation" | "sector_allocation"
+                   | "exit_load_tax" | "investment_objective" | "about" | "fund_manager" | "fund_house",
   "ingestion_date": "YYYY-MM-DD",
   "text":          str,
   "tokens":        int
@@ -55,12 +55,47 @@ FALLBACK_OVERLAP: int = 20       # token overlap between fallback sub-chunks
 
 SECTION_TYPES: tuple[str, ...] = (
     "fund_overview",
+    "riskometer",
+    "benchmark",
+    "holdings",
+    "asset_allocation",
+    "sector_allocation",
+    "exit_load_rules",
+    "taxation",
     "exit_load_tax",
     "investment_objective",
     "about",
     "fund_manager",
     "fund_house",
 )
+
+# Embeds `section: …` labels into chunk text for vector retrieval (re-run Phase 2 after extractor changes).
+_SECTION_EMBED_PREFIX: dict[str, str] = {
+    "fund_overview": (
+        "section: fund_overview AUM NAV expense ratio minimum SIP lumpsum "
+        "risk rating category lock-in SID KIM factsheet"
+    ),
+    "riskometer": "section: riskometer risk level risk category rating value research",
+    "benchmark": "section: benchmark index underlying tracked total return NIFTY SENSEX",
+    "holdings": "section: holdings top holdings portfolio stocks weights constituents",
+    "asset_allocation": (
+        "section: asset_allocation section: allocation asset allocation equity debt cash "
+        "hybrid split portfolio allocation asset classes"
+    ),
+    "sector_allocation": (
+        "section: sector_allocation section: allocation sector allocation sector industry "
+        "exposure weights portfolio"
+    ),
+    "exit_load_rules": "section: exit_load exit load redemption fee window stamp duty header",
+    "taxation": "section: taxation LTCG STCG tax implication redeem capital gains withholding",
+    "exit_load_tax": (
+        "section: exit_load section: taxation stamp duty LTCG STCG exit load combined block"
+    ),
+    "investment_objective": "section: objective section: benchmark investment objective index",
+    "about": "section: about scheme summary launch AMC description",
+    "fund_manager": "section: fund_manager manager CIO experience education tenure",
+    "fund_house": "section: fund_house AMC registrar custodian contact website AUM",
+}
 
 CHUNKS_JSONL_FILENAME: str = "chunks.jsonl"
 
@@ -131,6 +166,11 @@ def chunk_fund(fund: dict, sections: dict[str, str]) -> list[dict]:
             if not sub_text:
                 continue
             chunk_id = f"{fund_id}_{section_type}_{seq}"
+            label = _SECTION_EMBED_PREFIX.get(
+                section_type,
+                f"section: {section_type.replace('_', ' ')}",
+            )
+            embed_text = f"{label}\nfund={fund_name}\n\n{sub_text}"
             chunks.append({
                 "chunk_id":       chunk_id,
                 "fund_id":        fund_id,
@@ -139,8 +179,8 @@ def chunk_fund(fund: dict, sections: dict[str, str]) -> list[dict]:
                 "doc_type":       "groww_fund_page",
                 "section_type":   section_type,
                 "ingestion_date": today,
-                "text":           sub_text,
-                "tokens":         _approx_tokens(sub_text),
+                "text":           embed_text,
+                "tokens":         _approx_tokens(embed_text),
             })
 
     logger.debug("  [%s] %d chunks produced", fund_id, len(chunks))

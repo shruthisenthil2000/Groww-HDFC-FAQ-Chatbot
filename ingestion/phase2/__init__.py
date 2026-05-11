@@ -5,8 +5,7 @@ Subphase modules
 ----------------
 extractor   (2.1)  Section-aware text extraction from raw HTML   [implemented]
 chunker     (2.2)  Metadata-rich chunk dicts from section text   [implemented]
-embedder    (2.3)  Batch embedding (local sentence-transformers
-                   or OpenAI)                                     [implemented]
+embedder    (2.3)  Batch embedding (local sentence-transformers)  [implemented]
 indexer     (2.4)  Parquet persistence + ChromaDB vector index   [implemented]
 
 Phase 2 begins only after Phase 1.4 (integrity check) passes.

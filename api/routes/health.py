@@ -1,40 +1,27 @@
-"""
-GET /api/health — liveness + configuration check.
-"""
-
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from fastapi import APIRouter
+
 from api.models import HealthResponse
+from config import EMBEDDING_MODEL, FAISS_META_PATH, GROQ_API_KEY, LLM_MODEL
 
 router = APIRouter()
 
 
-@router.get(
-    "/health",
-    response_model=HealthResponse,
-    summary="Health check",
-)
+@router.get("/health", response_model=HealthResponse)
 async def health() -> HealthResponse:
-    import json
-    from pathlib import Path
-    from config import LLM_PROVIDER, LLM_MODEL, EMBEDDING_MODEL, GROQ_API_KEY
-
-    # Count indexed chunks from sidecar (quick, no model load)
     try:
-        meta_path = Path("data/index/vector.meta.json")
-        corpus_chunks = len(json.loads(meta_path.read_text())) if meta_path.exists() else 0
+        path = Path(FAISS_META_PATH)
+        corpus_chunks = len(json.loads(path.read_text(encoding="utf-8"))) if path.exists() else 0
     except Exception:
         corpus_chunks = 0
-
-    groq_key = GROQ_API_KEY.strip()
-    groq_key_set = bool(groq_key) and groq_key not in ("your_groq_key_here", "gsk_...")
-
     return HealthResponse(
         status="ok",
-        llm_provider=LLM_PROVIDER,
         llm_model=LLM_MODEL,
         embedding_model=EMBEDDING_MODEL,
         corpus_chunks=corpus_chunks,
-        groq_key_set=groq_key_set,
+        groq_key_set=bool(GROQ_API_KEY.strip()),
     )
