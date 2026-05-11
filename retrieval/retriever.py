@@ -11,7 +11,13 @@ from retrieval.scheme_matcher import (
     retrieval_query_variants,
 )
 
-_model = SentenceTransformer(EMBEDDING_MODEL)
+_model = None
+
+def get_model():
+    global _model
+    if _model is None:
+        _model = SentenceTransformer(EMBEDDING_MODEL)
+    return _model
 _SECTION_BONUS = 0.08
 
 
