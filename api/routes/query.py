@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import traceback
 import uuid
 from pathlib import Path
 
@@ -24,9 +25,15 @@ async def chat(body: ChatRequest) -> ChatResponse:
         else:
             chunks = retrieve_docs(body.query)
             result = generate_answer(body.query, chunks)
+
+        return ChatResponse(
+            answer=result["answer"],
+            sources=result["sources"],
+        )
+
     except Exception as exc:
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(exc)) from exc
-    return ChatResponse(answer=result["answer"], sources=result["sources"])
 
 
 @router.post("/query", response_model=ChatResponse)
@@ -36,14 +43,18 @@ async def query_alias(body: ChatRequest) -> ChatResponse:
 
 def _split_text(text: str, chunk_words: int = 220, overlap: int = 40) -> list[str]:
     words = text.split()
+
     if not words:
         return []
+
     out: list[str] = []
     i = 0
     step = max(1, chunk_words - overlap)
+
     while i < len(words):
         out.append(" ".join(words[i : i + chunk_words]).strip())
         i += step
+
     return [x for x in out if x]
 
 
@@ -51,19 +62,29 @@ def _split_text(text: str, chunk_words: int = 220, overlap: int = 40) -> list[st
 async def upload_document(file: UploadFile = File(...)) -> UploadResponse:
     raw = await file.read()
     text = raw.decode("utf-8", errors="ignore").strip()
+
     chunks = _split_text(text)
+
     if not chunks:
-        raise HTTPException(status_code=400, detail="Uploaded file has no readable text")
+        raise HTTPException(
+            status_code=400,
+            detail="Uploaded file has no readable text",
+        )
 
     vectors = embed_texts(chunks)
 
     try:
         import faiss
     except ImportError as exc:
-        raise HTTPException(status_code=500, detail="faiss-cpu not installed") from exc
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail="faiss-cpu not installed",
+        ) from exc
 
     idx_path = Path(FAISS_INDEX_PATH)
     meta_path = Path(FAISS_META_PATH)
+
     idx_path.parent.mkdir(parents=True, exist_ok=True)
     meta_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -73,15 +94,20 @@ async def upload_document(file: UploadFile = File(...)) -> UploadResponse:
         index = faiss.IndexFlatIP(EMBEDDING_DIM)
 
     arr = np.array(vectors, dtype=np.float32)
+
     faiss.normalize_L2(arr)
+
     index.add(arr)
+
     faiss.write_index(index, str(idx_path))
 
     meta = []
+
     if meta_path.exists():
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
 
     doc_id = uuid.uuid4().hex[:10]
+
     for i, chunk in enumerate(chunks):
         meta.append(
             {
@@ -94,7 +120,11 @@ async def upload_document(file: UploadFile = File(...)) -> UploadResponse:
                 "text": chunk,
             }
         )
-    meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    meta_path.write_text(
+        json.dumps(meta, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
 
     return UploadResponse(
         filename=file.filename or "uploaded_file",
