@@ -51,30 +51,29 @@ function stripTrailingSourceLine(text) {
   return t
 }
 
-/** Split programmatic `Last updated from sources:` footer (must never be trimmed away). */
-function splitAnswerLastUpdated(text) {
-  if (!text || typeof text !== 'string') return { main: text, lastUpdated: null }
+/** Remove backend `Last updated from sources:` footer — UI shows `Last updated on:` from `sources[0].ingestion_date`. */
+function stripLastUpdatedFooter(text) {
+  if (!text || typeof text !== 'string') return text
   const re = /\n+(Last updated from sources:\s*.+)$/im
   const m = text.match(re)
-  if (!m) return { main: text, lastUpdated: null }
-  return {
-    main: text.slice(0, m.index).trimEnd(),
-    lastUpdated: m[1].trim(),
-  }
+  if (!m) return text
+  return text.slice(0, m.index).trimEnd()
 }
 
-/** First citation row that has a URL — single clickable link in the UI. */
+/** First backend source only — single Groww link in the UI. */
 function getPrimarySourceLink(sources) {
   if (!Array.isArray(sources) || !sources.length) return null
-  let raw = ''
-  for (const s of sources) {
-    raw = pickSourceUrl(s)
-    if (raw) break
-  }
+  const raw = pickSourceUrl(sources[0])
   const href = normalizeHref(raw)
   if (!href) return null
   const display = truncateUrl(href.replace(/^https?:\/\//i, '').replace(/\/$/, ''))
   return { href, display }
+}
+
+function getFirstSourceIngestionDate(sources) {
+  if (!Array.isArray(sources) || !sources.length) return ''
+  const d = sources[0]?.ingestion_date ?? sources[0]?.ingestionDate
+  return String(d ?? '').trim()
 }
 
 function SourceBlock({ sources }) {
@@ -291,23 +290,35 @@ export default function App() {
                 </div>
 
                 {messages.map((msg, i) => {
+                  const hasSources =
+                    msg.role === 'assistant' &&
+                    Array.isArray(msg.sources) &&
+                    msg.sources.length > 0
                   const cite =
-                    msg.role === 'assistant' ? getPrimarySourceLink(msg.sources) : null
-                  const display =
-                    msg.role === 'assistant' && cite
-                      ? stripTrailingSourceLine(msg.text)
-                      : msg.text
-                  const { main, lastUpdated } =
-                    msg.role === 'assistant' ? splitAnswerLastUpdated(display) : { main: display, lastUpdated: null }
+                    msg.role === 'assistant' && hasSources ? getPrimarySourceLink(msg.sources) : null
+                  const ingestionDate =
+                    msg.role === 'assistant' && hasSources ? getFirstSourceIngestionDate(msg.sources) : ''
+                  const showGrounding = hasSources && (Boolean(cite) || Boolean(ingestionDate))
+                  let display = msg.text
+                  if (msg.role === 'assistant') {
+                    display = stripLastUpdatedFooter(display)
+                    if (hasSources && cite) {
+                      display = stripTrailingSourceLine(display)
+                    }
+                  }
                   return (
                     <article key={i} className={`bubble ${msg.role}`}>
                       <div className="bubble-body">
-                        <p>{main}</p>
-                        {lastUpdated ? (
-                          <p className="answer-last-updated">{lastUpdated}</p>
-                        ) : null}
+                        <p>{display}</p>
                       </div>
-                      {cite ? <SourceBlock sources={msg.sources} /> : null}
+                      {showGrounding ? (
+                        <div className="assistant-grounding">
+                          {cite ? <SourceBlock sources={msg.sources} /> : null}
+                          {ingestionDate ? (
+                            <p className="answer-last-updated-on">Last updated on: {ingestionDate}</p>
+                          ) : null}
+                        </div>
+                      ) : null}
                     </article>
                   )
                 })}
