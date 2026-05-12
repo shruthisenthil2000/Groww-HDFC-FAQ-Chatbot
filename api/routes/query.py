@@ -32,8 +32,15 @@ async def chat(body: ChatRequest) -> ChatResponse:
         )
 
     except Exception as exc:
+        print("========= FULL ERROR =========")
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
+        print("ERROR MESSAGE:", str(exc))
+        print("==============================")
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"{type(exc).__name__}: {str(exc)}"
+        ) from exc
 
 
 @router.post("/query", response_model=ChatResponse)
@@ -77,6 +84,7 @@ async def upload_document(file: UploadFile = File(...)) -> UploadResponse:
         import faiss
     except ImportError as exc:
         traceback.print_exc()
+
         raise HTTPException(
             status_code=500,
             detail="faiss-cpu not installed",
