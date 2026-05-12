@@ -1,4 +1,4 @@
-const BASE = 'https://groww-hdfc-faq-chatbot-production.up.railway.app'
+const BASE = 'https://groww-hdfc-faq-chatbot-production.up.railway.app/api'
 
 export async function askChat(query) {
   const res = await fetch(`${BASE}/chat`, {
