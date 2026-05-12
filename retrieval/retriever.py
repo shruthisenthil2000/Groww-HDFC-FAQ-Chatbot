@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sentence_transformers import SentenceTransformer
 
 from config import RETRIEVER_TOP_K
 from ingestion.phase2.indexer import search_faiss
@@ -13,18 +13,16 @@ from retrieval.scheme_matcher import (
 
 _SECTION_BONUS = 0.08
 
-# Simple lightweight vectorizer
-_vectorizer = TfidfVectorizer(max_features=384)
+# Load embedding model
+model = SentenceTransformer("all-MiniLM-L6-v2")
 
 
 def embed_query(text: str) -> list[float]:
-    vec = _vectorizer.fit_transform([text]).toarray()[0]
-    return vec.tolist()
+    return model.encode(text).tolist()
 
 
 def embed_texts(texts: list[str]) -> list[list[float]]:
-    vecs = _vectorizer.fit_transform(texts).toarray()
-    return [v.tolist() for v in vecs]
+    return model.encode(texts).tolist()
 
 
 def _prioritize_fund_id(chunks: list[dict], fund_id: str) -> list[dict]:
@@ -39,6 +37,7 @@ def _prioritize_fund_id(chunks: list[dict], fund_id: str) -> list[dict]:
 
     for c in same + other:
         cid = c.get("chunk_id") or ""
+
         if cid and cid not in seen:
             seen.add(cid)
             out.append(c)
