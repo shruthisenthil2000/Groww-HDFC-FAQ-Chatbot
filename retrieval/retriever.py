@@ -13,8 +13,13 @@ from retrieval.scheme_matcher import (
 
 _SECTION_BONUS = 0.08
 
-# Load embedding model
-model = SentenceTransformer("all-MiniLM-L6-v2")
+# Load embedding model (optimized for Railway CPU)
+model = SentenceTransformer(
+    "all-MiniLM-L6-v2",
+    device="cpu"
+)
+
+model.max_seq_length = 128
 
 
 def embed_query(text: str) -> list[float]:
