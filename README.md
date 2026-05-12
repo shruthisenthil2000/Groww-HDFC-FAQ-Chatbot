@@ -1,10 +1,28 @@
 # HDFC Mutual Fund FAQ Assistant
 
-A Retrieval-Augmented Generation (RAG) system that answers factual questions about
-**14 HDFC Mutual Fund schemes** using a fixed, closed corpus of Groww fund pages.
+## Live Demo
 
-> **Disclaimer:** This system provides source-derived, snapshot-based information only.
+Frontend: https://groww-hdfc-faq-frontend.onrender.com/
+
+Backend API: https://groww-hdfc-faq-chatbot-production.up.railway.app/
+
+A Retrieval-Augmented Generation (RAG) system that answers factual questions about  
+**15 HDFC Mutual Fund schemes** using a fixed, closed corpus of Groww fund pages.
+
+> **Disclaimer:** This system provides source-derived, snapshot-based information only.  
 > It is not investment advice and is not a substitute for official AMC, AMFI, or SEBI publications.
+
+---
+
+## Features
+
+- Retrieval-Augmented Generation (RAG)
+- FAISS vector similarity search
+- Sentence-transformer embeddings
+- Source-grounded factual answers
+- Closed corpus mutual fund assistant
+- Live deployed frontend + backend
+- Metadata-aware retrieval pipeline
 
 ---
 
@@ -13,7 +31,7 @@ A Retrieval-Augmented Generation (RAG) system that answers factual questions abo
 | Phase | Folder | Description |
 |-------|--------|-------------|
 | 0 | `corpus/` + `scripts/` | AMC & fund selection, URL manifest (`sources.json`) |
-| 1 | `ingestion/scraper.py` | Scrape 14 Groww fund pages (HTML only) |
+| 1 | `ingestion/scraper.py` | Scrape 15 Groww fund pages (HTML only) |
 | 2 | `ingestion/extractor.py`, `chunker.py`, `indexer.py` | Extract, chunk, embed & index |
 | 3 | `rag/` | RAG core: retriever, reranker, generator, postprocessor |
 | 4 | `pipeline/` | Query classifier, refusal handler, end-to-end orchestrator |
@@ -25,7 +43,7 @@ A Retrieval-Augmented Generation (RAG) system that answers factual questions abo
 
 ## Corpus Scope
 
-The corpus is **fixed and closed**: only the 14 Groww HDFC Mutual Fund pages defined in
+The corpus is **fixed and closed**: only the 15 Groww HDFC Mutual Fund pages defined in  
 `corpus/sources.json` are ever scraped or indexed.
 
 | # | Fund | Category |
@@ -44,6 +62,7 @@ The corpus is **fixed and closed**: only the 14 Groww HDFC Mutual Fund pages def
 | 12 | HDFC Pharma And Healthcare Fund Direct Growth | Equity — Sectoral |
 | 13 | HDFC BSE Sensex Index Fund Direct Growth | Equity — Index |
 | 14 | HDFC Short Term Debt Fund Direct Plan Growth | Debt — Short Duration |
+| 15 | HDFC Housing Opportunities Fund Direct Growth | Equity — Sectoral |
 
 ---
 
@@ -64,7 +83,11 @@ cp .env.example .env            # Fill in your API keys
 python scripts/phase0_setup.py
 ```
 
-Expected output: `✔ Phase 0 validation PASSED. sources.json is ready for Phase 1.`
+Expected output:
+
+```txt
+✔ Phase 0 validation PASSED. sources.json is ready for Phase 1.
+```
 
 ### 3. Run tests (Phase 6)
 
@@ -72,7 +95,7 @@ Expected output: `✔ Phase 0 validation PASSED. sources.json is ready for Phase
 pytest tests/ -v
 ```
 
-### 4. Launch UI (Phase 5 — after all phases are implemented)
+### 4. Launch UI
 
 ```bash
 streamlit run ui/app.py
@@ -80,40 +103,61 @@ streamlit run ui/app.py
 
 ---
 
+## Sample Questions
+
+- What is the expense ratio of HDFC Mid Cap Fund?
+- Who manages HDFC Flexi Cap Fund?
+- What category does HDFC Defence Fund belong to?
+- Is HDFC ELSS eligible for tax saving?
+- What is the NAV of HDFC Gold Fund?
+
+---
+
+## Known Limitations
+
+- Answers are restricted to the indexed Groww corpus.
+- Does not provide financial or investment advice.
+- NAV and market values may become outdated over time.
+- Cannot answer questions outside supported HDFC schemes.
+- Depends on scraped snapshot data, not live AMC feeds.
+
+---
+
 ## Folder Structure
 
-```
+```txt
 ├── corpus/
-│   ├── raw/                  # Scraped HTML files (Phase 1 output)
-│   ├── processed/            # Cleaned text + chunks (Phase 2 output)
-│   └── sources.json          # Phase 0 deliverable — closed corpus manifest
+│   ├── raw/
+│   ├── processed/
+│   └── sources.json
 ├── ingestion/
-│   ├── scraper.py            # Phase 1
-│   ├── extractor.py          # Phase 2
-│   ├── chunker.py            # Phase 2
-│   └── indexer.py            # Phase 2
+│   ├── scraper.py
+│   ├── extractor.py
+│   ├── chunker.py
+│   └── indexer.py
 ├── rag/
-│   ├── retriever.py          # Phase 3
-│   ├── reranker.py           # Phase 3
-│   ├── generator.py          # Phase 3
-│   └── postprocessor.py      # Phase 3
+│   ├── retriever.py
+│   ├── reranker.py
+│   ├── generator.py
+│   └── postprocessor.py
 ├── pipeline/
-│   ├── classifier.py         # Phase 4
-│   ├── refusal_handler.py    # Phase 4
-│   └── pipeline.py           # Phase 4
+│   ├── classifier.py
+│   ├── refusal_handler.py
+│   └── pipeline.py
 ├── ui/
-│   └── app.py                # Phase 5
+│   └── app.py
 ├── tests/
-│   ├── unit/                 # Phase 6 unit tests
-│   ├── integration/          # Phase 6 integration tests
-│   └── eval/                 # Phase 6 RAG evaluation
+│   ├── unit/
+│   ├── integration/
+│   └── eval/
 ├── scripts/
-│   └── phase0_setup.py       # Phase 0 validation script
+│   └── phase0_setup.py
 ├── DOCS/
 │   ├── architecture.md
 │   ├── edge_cases.md
 │   └── problemstatement.md
-├── .env.example
+├── sources.md
+├── sample_qa.md
 ├── requirements.txt
 └── README.md
 ```
@@ -122,5 +166,5 @@ streamlit run ui/app.py
 
 ## Architecture Reference
 
-See [`DOCS/architecture.md`](DOCS/architecture.md) for the full phase-wise architecture.
-See [`DOCS/edge_cases.md`](DOCS/edge_cases.md) for edge cases per phase.
+See `DOCS/architecture.md` for the full phase-wise architecture.  
+See `DOCS/edge_cases.md` for edge cases and retrieval handling strategies.
