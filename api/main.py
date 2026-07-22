@@ -53,7 +53,24 @@ async def chat(body: ChatRequest) -> ChatResponse:
             result = refusal_response()
         else:
             chunks = retrieve_docs(body.query)
-            result = generate_answer(body.query, chunks)
+
+            print("\n===== RETRIEVED CHUNKS =====")
+
+            for chunk in chunks:
+                print(
+                    chunk.get("section_type"),
+                    "|",
+                    chunk.get("score"),
+                    "|",
+                    chunk.get("chunk_id"),
+                )
+
+            print("============================\n")
+
+            result = generate_answer(
+                body.query,
+                chunks,
+            )
 
         return ChatResponse(
             answer=result["answer"],
