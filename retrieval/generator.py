@@ -6,145 +6,296 @@ from groq import Groq
 
 from config import LLM_MODEL, LLM_TEMPERATURE, require_groq_key
 
+
 NO_ANSWER = "I don't have this information in my current sources."
+
 
 SYSTEM_PROMPT = """You are a facts-only HDFC mutual fund FAQ assistant.
 
-The context chunks are excerpts from official Groww HDFC fund pages. Each chunk is prefixed with section metadata (e.g. `section: holdings`, `section: asset_allocation`, `section: sector_allocation`, `section: taxation`, `section: exit_load`, `section: benchmark`, `section: riskometer`, `section: fund_overview`, investment_objective, fund_manager, fund_house).
+The context chunks are excerpts from official Groww HDFC fund pages. Each chunk is prefixed with section metadata such as holdings, asset_allocation, sector_allocation, taxation, exit_load, benchmark, riskometer, fund_overview, investment_objective, fund_manager, and fund_house.
 
 Rules:
-- Use ONLY the provided context. Do not invent numbers, funds, or URLs not present in the context.
-- Write at most 3 short sentences total.
-- Include exactly one official Groww source URL in the answer body (https://groww.in/mutual-funds/... from the context).
-- Answer the question using the most relevant chunk(s), including taxation, stamp duty, exit load, benchmark, risk, AUM, minimum investment, lock-in, manager, category, holdings, or allocation when that information appears in the context.
-- Do NOT end with a separate "Last updated" line — the system appends that automatically.
-- Reply with the exact sentence below ONLY if NONE of the chunks contain any information related to the question (ignore generic navigation):
+- Use ONLY the provided context.
+- Do not invent numbers, fund details, URLs, sources, or dates.
+- Answer the user's exact question directly.
+- Write at most 2 short sentences.
+- Do not include URLs, source labels, citations, or last-updated dates in the answer.
+- Do not say "According to Groww", "Per the indexed Groww page", or similar phrases.
+- Give only the clean factual answer in natural language.
+- The application displays the source and last-updated date separately.
+- Reply with the exact sentence below ONLY if none of the chunks contain information related to the question:
+
 I don't have this information in my current sources.
 """
-
-
-# Strip any model-echoed footer so we append exactly one canonical line (post-LLM only).
-_LAST_UPDATED_RE = re.compile(
-    r"\n*\*?\*?Last updated from sources:\*?\*?\s*.+$",
-    re.IGNORECASE | re.DOTALL,
-)
-
-_LAST_UPDATED_SENTINEL = "Last updated from sources:"
-
-
-def _max_ingestion_date_from_chunks(chunks: list[dict]) -> str:
-    """Latest snapshot date among retrieved chunks (ISO YYYY-MM-DD preferred)."""
-    dates: list[str] = []
-    for c in chunks:
-        d = (c.get("ingestion_date") or "").strip()
-        if d and re.match(r"^\d{4}-\d{2}-\d{2}", d):
-            dates.append(d)
-    if not dates:
-        return "date unavailable"
-    return max(dates)
-
-
-def append_last_updated_line(answer: str, chunks: list[dict]) -> str:
-    """
-    Programmatically append a single footer using max(ingestion_date) over *chunks*
-    (retrieved context). Does not call the LLM. Idempotent if already well-formed.
-    """
-    base = _LAST_UPDATED_RE.sub("", (answer or "").rstrip()).rstrip()
-    dt = _max_ingestion_date_from_chunks(chunks)
-    return f"{base}\n\n{_LAST_UPDATED_SENTINEL} {dt}"
 
 
 def _build_context(chunks: list[dict]) -> tuple[str, list[dict]]:
     lines: list[str] = []
     sources: list[dict] = []
     seen: set[str] = set()
-    for i, c in enumerate(chunks, 1):
-        fund_name = c.get("fund_name", "")
-        url = c.get("groww_url", "")
-        dt = c.get("ingestion_date", "")
-        sec = c.get("section_type", "")
-        text = c.get("text", "")
+
+    for index, chunk in enumerate(chunks, 1):
+        fund_name = chunk.get("fund_name", "")
+        url = chunk.get("groww_url", "")
+        ingestion_date = chunk.get("ingestion_date", "")
+        section = chunk.get("section_type", "")
+        text = chunk.get("text", "")
+
         lines.append(
-            f"[Chunk {i}] section={sec} fund={fund_name} url={url} date={dt}\n{text}"
+            f"[Chunk {index}] "
+            f"section={section} "
+            f"fund={fund_name} "
+            f"url={url} "
+            f"date={ingestion_date}\n"
+            f"{text}"
         )
+
         if url and url not in seen:
             seen.add(url)
             sources.append(
-                {"fund_name": fund_name, "groww_url": url, "ingestion_date": dt}
+                {
+                    "fund_name": fund_name,
+                    "groww_url": url,
+                    "ingestion_date": ingestion_date,
+                }
             )
+
     return "\n\n".join(lines), sources
 
 
 def _token_overlap_score(query: str, text: str) -> int:
-    qtok = set(re.findall(r"[a-z0-9]+", query.lower()))
-    ttok = set(re.findall(r"[a-z0-9]+", text.lower()))
-    if not qtok:
+    query_tokens = set(
+        re.findall(r"[a-z0-9]+", (query or "").lower())
+    )
+    text_tokens = set(
+        re.findall(r"[a-z0-9]+", (text or "").lower())
+    )
+
+    if not query_tokens:
         return 0
-    return len(qtok & ttok)
+
+    return len(query_tokens & text_tokens)
 
 
-def _extractive_fallback_answer(query: str, chunks: list[dict]) -> str | None:
+def _clean_chunk_text(raw: str) -> str:
+    body = re.sub(
+        r"^(?:\[section:[^\]]+\]|section:\s*[^\n]+)\s*",
+        "",
+        raw,
+        flags=re.IGNORECASE | re.MULTILINE,
+    )
+
+    body = re.sub(
+        r"^fund=[^\n]+\n+",
+        "",
+        body,
+        flags=re.IGNORECASE,
+    )
+
+    body = re.sub(
+        r"https?://\S+",
+        "",
+        body,
+    )
+
+    body = re.sub(
+        r"\s+",
+        " ",
+        body,
+    ).strip()
+
+    return body
+
+
+def _extractive_fallback_answer(
+    query: str,
+    chunks: list[dict],
+) -> str | None:
     """
-    When the LLM is overly conservative but retrieval returned on-corpus chunks,
-    surface the best-matching excerpt with one Groww URL (no fabrication).
+    Return a concise excerpt when the LLM is too conservative.
+
+    The frontend already displays the source and ingestion date separately,
+    so this fallback must not include URLs, source labels, or dates.
     """
     if not chunks:
         return None
+
     best = max(
         chunks[:12],
-        key=lambda c: (
-            _token_overlap_score(query, c.get("text") or ""),
-            float(c.get("score", 0.0)),
+        key=lambda chunk: (
+            _token_overlap_score(
+                query,
+                chunk.get("text") or "",
+            ),
+            float(chunk.get("score", 0.0)),
         ),
     )
+
     raw = (best.get("text") or "").strip()
-    if len(raw) < 40:
+
+    if len(raw) < 20:
         return None
-    url = (best.get("groww_url") or "").strip()
-    fname = (best.get("fund_name") or "the scheme").strip()
-    # Strip leading section prefix lines for readability (present after re-index).
-    body = re.sub(r"^(?:\[section:[^\]]+\]|section:\s*[^\n]+)\s*", "", raw, flags=re.I | re.MULTILINE)
-    body = re.sub(r"^fund=[^\n]+\n+", "", body, flags=re.I)
-    body = body.replace("\n\n", " ").strip()
-    sentences = re.split(r"(?<=[.!?])\s+", body)
-    snippet = " ".join(sentences[:3]).strip()
-    if len(snippet) > 650:
-        snippet = snippet[:650].rsplit(" ", 1)[0] + "…"
-    if not snippet:
+
+    body = _clean_chunk_text(raw)
+
+    if not body:
         return None
-    if url:
-        return (
-            f"Per the indexed Groww page for {fname}: {snippet} "
-            f"Full details: {url}"
+
+    sentences = re.split(
+        r"(?<=[.!?])\s+",
+        body,
+    )
+
+    snippet = " ".join(sentences[:2]).strip()
+
+    if len(snippet) > 350:
+        snippet = (
+            snippet[:350]
+            .rsplit(" ", 1)[0]
+            .rstrip(" ,;:")
+            + "…"
         )
-    return f"Per the indexed Groww page for {fname}: {snippet}"
+
+    return snippet or None
 
 
-def generate_answer(query: str, chunks: list[dict]) -> dict:
+def _clean_model_answer(answer: str) -> str:
+    """
+    Remove source URLs, source labels, and date lines if the model includes
+    them despite the system prompt.
+    """
+    cleaned = (answer or "").strip()
+
+    cleaned = re.sub(
+        r"https?://\S+",
+        "",
+        cleaned,
+    )
+
+    cleaned = re.sub(
+        r"\n*\s*Source\s*:\s*.*$",
+        "",
+        cleaned,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+
+    cleaned = re.sub(
+        r"\n*\s*Last updated(?: from sources| on)?\s*:\s*.*$",
+        "",
+        cleaned,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+
+    cleaned = re.sub(
+        r"\bFull details\s*:\s*",
+        "",
+        cleaned,
+        flags=re.IGNORECASE,
+    )
+
+    cleaned = re.sub(
+        r"\bPer the indexed Groww page for [^:]+:\s*",
+        "",
+        cleaned,
+        flags=re.IGNORECASE,
+    )
+
+    cleaned = re.sub(
+        r"\bAccording to (?:the )?(?:official )?Groww(?: page)?[:,]?\s*",
+        "",
+        cleaned,
+        flags=re.IGNORECASE,
+    )
+
+    cleaned = re.sub(
+        r"\s+",
+        " ",
+        cleaned,
+    ).strip()
+
+    cleaned = cleaned.rstrip(" -–—,;:")
+
+    return cleaned
+
+
+def generate_answer(
+    query: str,
+    chunks: list[dict],
+) -> dict:
     if not chunks:
-        return {"answer": NO_ANSWER, "sources": []}
+        return {
+            "answer": NO_ANSWER,
+            "sources": [],
+        }
 
     context, sources = _build_context(chunks)
-    client = Groq(api_key=require_groq_key())
+
+    client = Groq(
+        api_key=require_groq_key()
+    )
+
     completion = client.chat.completions.create(
         model=LLM_MODEL,
         temperature=LLM_TEMPERATURE,
-        max_tokens=450,
+        max_tokens=220,
         messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {query}"},
+            {
+                "role": "system",
+                "content": SYSTEM_PROMPT,
+            },
+            {
+                "role": "user",
+                "content": (
+                    f"Context:\n{context}\n\n"
+                    f"Question: {query}"
+                ),
+            },
         ],
     )
-    answer = completion.choices[0].message.content.strip()
-    top_score = float(chunks[0].get("score", 0.0)) if chunks else 0.0
+
+    answer = (
+        completion.choices[0]
+        .message.content
+        .strip()
+    )
+
+    top_score = float(
+        chunks[0].get("score", 0.0)
+    )
 
     if NO_ANSWER.lower() in answer.lower():
-        fb = _extractive_fallback_answer(query, chunks)
-        if fb and top_score >= 0.08:
-            answer = fb
-        else:
-            return {"answer": NO_ANSWER, "sources": []}
+        fallback = _extractive_fallback_answer(
+            query,
+            chunks,
+        )
 
-    answer = append_last_updated_line(answer, chunks)
-    primary = sources[:1] if sources else []
-    return {"answer": answer, "sources": primary}
+        if fallback and top_score >= 0.08:
+            answer = fallback
+        else:
+            return {
+                "answer": NO_ANSWER,
+                "sources": [],
+            }
+
+    answer = _clean_model_answer(answer)
+
+    if not answer:
+        fallback = _extractive_fallback_answer(
+            query,
+            chunks,
+        )
+
+        if fallback:
+            answer = fallback
+        else:
+            return {
+                "answer": NO_ANSWER,
+                "sources": [],
+            }
+
+    primary_source = sources[:1] if sources else []
+
+    return {
+        "answer": answer,
+        "sources": primary_source,
+    }
