@@ -68,6 +68,11 @@ _PROMOTIONAL_PHRASES = (
     "zero brokerage",
     "sign up on groww",
     "groww stocks",
+    "fund houses know about amcs",
+    "track all active nfos",
+    "mutual funds by groww",
+    "mutual funds screener",
+    "import funds and track",
 )
 
 
@@ -130,6 +135,139 @@ def _is_promotional_chunk(chunk: dict) -> bool:
     )
 
 
+def _detect_query_sections(query: str) -> set[str]:
+    """
+    Detect the factual section required by the user's question.
+
+    This extends the existing scheme matcher so phrases such as
+    "Who manages..." reliably map to the fund_manager section.
+    """
+    query_text = _normalise(query)
+
+    sections = set(
+        preferred_sections_for_query(query)
+    )
+
+    if any(
+        phrase in query_text
+        for phrase in (
+            "who manages",
+            "who manage",
+            "who is the manager",
+            "who are the managers",
+            "fund manager",
+            "fund managers",
+            "managed by",
+            "manager of",
+            "manages the",
+        )
+    ):
+        sections.add("fund_manager")
+
+    if any(
+        phrase in query_text
+        for phrase in (
+            "investment objective",
+            "objective of",
+            "scheme objective",
+            "investment aim",
+        )
+    ):
+        sections.add("investment_objective")
+
+    if any(
+        phrase in query_text
+        for phrase in (
+            "expense ratio",
+            "minimum sip",
+            "sip amount",
+            "minimum investment",
+            "minimum lumpsum",
+            "lock-in",
+            "lock in",
+            "aum",
+            "fund size",
+        )
+    ):
+        sections.add("fund_overview")
+
+    if any(
+        phrase in query_text
+        for phrase in (
+            "exit load",
+            "exit fee",
+            "redemption charge",
+        )
+    ):
+        sections.add("exit_load")
+
+    if any(
+        phrase in query_text
+        for phrase in (
+            "benchmark",
+            "which index",
+            "index tracked",
+        )
+    ):
+        sections.add("benchmark")
+
+    if any(
+        phrase in query_text
+        for phrase in (
+            "risk",
+            "riskometer",
+            "risk rating",
+        )
+    ):
+        sections.add("riskometer")
+
+    if any(
+        phrase in query_text
+        for phrase in (
+            "tax",
+            "taxation",
+            "ltcg",
+            "stcg",
+            "long term capital gains",
+            "short term capital gains",
+            "stamp duty",
+        )
+    ):
+        sections.add("taxation")
+
+    if any(
+        phrase in query_text
+        for phrase in (
+            "holding",
+            "holdings",
+            "top stocks",
+            "portfolio companies",
+        )
+    ):
+        sections.add("holdings")
+
+    if any(
+        phrase in query_text
+        for phrase in (
+            "sector allocation",
+            "sector exposure",
+        )
+    ):
+        sections.add("sector_allocation")
+
+    if any(
+        phrase in query_text
+        for phrase in (
+            "asset allocation",
+            "equity allocation",
+            "debt allocation",
+        )
+    ):
+        sections.add("asset_allocation")
+
+    return sections
+
+
 def _score_chunk(
     query_variants: list[str],
     chunk: dict,
@@ -157,6 +295,7 @@ def _score_chunk(
 
         overlap = query_tokens & searchable_tokens
         coverage = len(overlap) / len(query_tokens)
+
         overlap_bonus = min(
             len(overlap) * 0.03,
             0.24,
@@ -224,9 +363,7 @@ def retrieve_docs(
 
     chunks = _load_chunks()
 
-    preferred_sections = set(
-        preferred_sections_for_query(query)
-    )
+    preferred_sections = _detect_query_sections(query)
 
     query_variants = retrieval_query_variants(
         query
@@ -260,17 +397,19 @@ def retrieve_docs(
         chunk["score"] = float(score)
         ranked.append(chunk)
 
+    # Restrict results to the identified fund whenever possible.
     if matched_fund_id:
         same_fund = [
             chunk
             for chunk in ranked
-            if chunk.get("fund_id")
-            == matched_fund_id
+            if chunk.get("fund_id") == matched_fund_id
         ]
 
         if same_fund:
             ranked = same_fund
 
+    # For specific factual questions, return only the required section
+    # whenever that section exists for the matched fund.
     if preferred_sections:
         matching_sections = [
             chunk
