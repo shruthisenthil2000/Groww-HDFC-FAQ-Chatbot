@@ -15,7 +15,6 @@ from retrieval.scheme_matcher import (
 
 _SECTION_BONUS = 0.20
 
-# Common words that do not help retrieval.
 _STOP_WORDS = {
     "a",
     "an",
@@ -56,14 +55,29 @@ _STOP_WORDS = {
     "with",
 }
 
+_PROMOTIONAL_PHRASES = (
+    "invest in stocks",
+    "invest in etfs",
+    "invest in ipos",
+    "fast orders",
+    "real-time p&l",
+    "track returns on your stock holdings",
+    "download the app",
+    "open demat account",
+    "start investing",
+    "zero brokerage",
+    "sign up on groww",
+    "groww stocks",
+)
+
 
 @lru_cache(maxsize=1)
 def _load_chunks() -> list[dict]:
     """
-    Load chunk text and metadata from the existing FAISS metadata JSON.
+    Load chunk text and metadata from the existing metadata JSON.
 
-    This does not load FAISS, NumPy, PyTorch, Transformers, or an embedding
-    model, so it is suitable for Render's free 512 MB instance.
+    This avoids loading FAISS, NumPy, PyTorch, Transformers, or an
+    embedding model and is suitable for Render's free instance.
     """
     path = Path(FAISS_META_PATH)
 
@@ -72,7 +86,9 @@ def _load_chunks() -> list[dict]:
             f"Chunk metadata file not found: {path}"
         )
 
-    data = json.loads(path.read_text(encoding="utf-8"))
+    data = json.loads(
+        path.read_text(encoding="utf-8")
+    )
 
     if not isinstance(data, list):
         raise ValueError(
@@ -83,7 +99,10 @@ def _load_chunks() -> list[dict]:
 
 
 def _tokens(text: str) -> set[str]:
-    words = re.findall(r"[a-z0-9]+", (text or "").lower())
+    words = re.findall(
+        r"[a-z0-9]+",
+        (text or "").lower(),
+    )
 
     return {
         word
@@ -98,6 +117,17 @@ def _normalise(text: str) -> str:
         " ",
         (text or "").lower(),
     ).strip()
+
+
+def _is_promotional_chunk(chunk: dict) -> bool:
+    text = _normalise(
+        chunk.get("text") or ""
+    )
+
+    return any(
+        phrase in text
+        for phrase in _PROMOTIONAL_PHRASES
+    )
 
 
 def _score_chunk(
@@ -126,31 +156,40 @@ def _score_chunk(
             continue
 
         overlap = query_tokens & searchable_tokens
-
-        # Fraction of meaningful query terms present in the chunk.
         coverage = len(overlap) / len(query_tokens)
-
-        # Small additional reward for the number of matched terms.
-        overlap_bonus = min(len(overlap) * 0.03, 0.24)
+        overlap_bonus = min(
+            len(overlap) * 0.03,
+            0.24,
+        )
 
         score = coverage + overlap_bonus
 
-        # Reward exact phrases where present.
-        if query_normalised and query_normalised in searchable:
+        if (
+            query_normalised
+            and query_normalised in searchable
+        ):
             score += 0.35
 
-        best_score = max(best_score, score)
+        best_score = max(
+            best_score,
+            score,
+        )
 
     if section_type in preferred_sections:
         best_score += _SECTION_BONUS
 
-    if matched_fund_id and fund_id == matched_fund_id:
+    if (
+        matched_fund_id
+        and fund_id == matched_fund_id
+    ):
         best_score += 0.75
 
     return best_score
 
 
-def _deduplicate(chunks: list[dict]) -> list[dict]:
+def _deduplicate(
+    chunks: list[dict],
+) -> list[dict]:
     output: list[dict] = []
     seen: set[str] = set()
 
@@ -177,13 +216,25 @@ def retrieve_docs(
     query: str,
     top_k: int | None = None,
 ) -> list[dict]:
-    k = top_k if top_k is not None else RETRIEVER_TOP_K
+    k = (
+        top_k
+        if top_k is not None
+        else RETRIEVER_TOP_K
+    )
 
     chunks = _load_chunks()
-    preferred_sections = preferred_sections_for_query(query)
-    query_variants = retrieval_query_variants(query)
 
-    _, matched_fund_id, match_score = best_scheme_match(query)
+    preferred_sections = set(
+        preferred_sections_for_query(query)
+    )
+
+    query_variants = retrieval_query_variants(
+        query
+    )
+
+    _, matched_fund_id, match_score = (
+        best_scheme_match(query)
+    )
 
     if match_score < SCHEME_MATCH_MIN_SCORE:
         matched_fund_id = None
@@ -193,6 +244,9 @@ def retrieve_docs(
     for original_chunk in chunks:
         chunk = dict(original_chunk)
 
+        if _is_promotional_chunk(chunk):
+            continue
+
         score = _score_chunk(
             query_variants=query_variants,
             chunk=chunk,
@@ -200,15 +254,38 @@ def retrieve_docs(
             matched_fund_id=matched_fund_id,
         )
 
-        # Ignore chunks with no meaningful match.
         if score <= 0:
             continue
 
         chunk["score"] = float(score)
         ranked.append(chunk)
 
+    if matched_fund_id:
+        same_fund = [
+            chunk
+            for chunk in ranked
+            if chunk.get("fund_id")
+            == matched_fund_id
+        ]
+
+        if same_fund:
+            ranked = same_fund
+
+    if preferred_sections:
+        matching_sections = [
+            chunk
+            for chunk in ranked
+            if chunk.get("section_type")
+            in preferred_sections
+        ]
+
+        if matching_sections:
+            ranked = matching_sections
+
     ranked.sort(
-        key=lambda item: float(item.get("score", 0.0)),
+        key=lambda item: float(
+            item.get("score", 0.0)
+        ),
         reverse=True,
     )
 
