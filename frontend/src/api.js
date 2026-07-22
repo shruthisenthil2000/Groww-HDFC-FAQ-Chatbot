@@ -1,4 +1,7 @@
-const BASE = 'https://groww-hdfc-faq-chatbot-production.up.railway.app/api'
+const BASE = `${
+  import.meta.env.VITE_API_URL ||
+  'https://groww-hdfc-faq-chatbot-final.onrender.com'
+}/api`
 
 export async function askChat(query) {
   const res = await fetch(`${BASE}/chat`, {
@@ -19,7 +22,7 @@ export async function askChat(query) {
 
   try {
     data = JSON.parse(text)
-  } catch (e) {
+  } catch {
     throw new Error(`Invalid JSON from backend: ${text}`)
   }
 
@@ -40,7 +43,10 @@ export async function uploadDocument(file) {
   })
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: res.statusText }))
+    const err = await res.json().catch(() => ({
+      detail: res.statusText,
+    }))
+
     throw new Error(err.detail || `HTTP ${res.status}`)
   }
 
